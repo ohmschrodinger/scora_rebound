@@ -8,6 +8,20 @@ package model;
  *
  * @author pranamimishra
  */
-public class Examiner {
+public class Examiner extends User {
+    private String department;
+    //constructor
+    public Examiner(String userId, String name, String password,String department)
+    {
+        super(userId,name,password);
+        this.department=department;
+        
+    }
+    //getter method
+    public String getDepartment(){ return this.department; }
+    
+    //setter method
+    
+    public void setDepartment(String department){ this.department=department;} 
     
 }
