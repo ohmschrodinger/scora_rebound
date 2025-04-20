@@ -25,8 +25,8 @@ public class Student extends User {
     public int getAcademicYear(){return this.academicYear;}
     
     //setter methods
-    public void getCourse(String course){ this.course=course;}
-    public void getAcademicYear(int academicYear){ this.academicYear=academicYear;}
+    public void setCourse(String course){ this.course=course;}
+    public void setAcademicYear(int academicYear){ this.academicYear=academicYear;}
     
     
 }

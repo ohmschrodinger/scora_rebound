@@ -65,7 +65,7 @@ public class StudentPortal extends JFrame {
         JButton logoutButton = new JButton("Logout");
         logoutButton.setFont(new Font("Segoe UI", Font.PLAIN, 12));
         logoutButton.addActionListener(e -> {
-            new LogonPage().setVisible(true);
+            new LoginPage().setVisible(true);
             dispose();
         });
         footerPanel.add(logoutButton);

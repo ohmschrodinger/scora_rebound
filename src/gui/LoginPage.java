@@ -1,107 +1,240 @@
+package gui;
+        
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import model.User;
+import model.Student;
+import model.Examiner;
+import services.AuthService;
+import javax.swing.border.MatteBorder;
+
+import java.io.IOException;
 
 public class LoginPage extends JFrame {
-    private JTextField usernameField;
+    private JTextField nameField;
     private JPasswordField passwordField;
+    private JRadioButton studentRadio;
+    private JRadioButton examinerRadio;
+    private ButtonGroup roleGroup;
+
+    private AuthService authService = new AuthService();
 
     public LoginPage() {
         setTitle("Virtual Examination System - Login");
-        setSize(400, 300);
+        setSize(900, 600); // Increased height to ensure buttons fit
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
+        setLayout(new BorderLayout());
 
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        mainPanel.setBackground(new Color(240, 245, 250));
+        // Left Panel (Form)
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.setBorder(BorderFactory.createEmptyBorder(50, 60, 50, 60));
+        leftPanel.setPreferredSize(new Dimension(450, 600));
+        leftPanel.setBackground(Color.WHITE);
 
-        // Header
-        JLabel headerLabel = new JLabel("VIRTUAL EXAMINATION SYSTEM", SwingConstants.CENTER);
-        headerLabel.setFont(new Font("Segoe UI", Font.BOLD, 20));
-        headerLabel.setForeground(new Color(0, 102, 204));
-        mainPanel.add(headerLabel, BorderLayout.NORTH);
+        // Sun icon
+        JLabel title = new JLabel("☀️");
+        title.setFont(new Font("Segoe UI", Font.PLAIN, 32));
+        title.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Login Form
-        JPanel formPanel = new JPanel(new GridLayout(3, 2, 10, 15));
-        formPanel.setBackground(new Color(240, 245, 250));
-        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
+        // Welcome text
+        JLabel welcomeLabel = new JLabel("Welcome again!");
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        welcomeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel usernameLabel = new JLabel("Username:");
-        usernameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        usernameField = new JTextField();
-        usernameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        JLabel subLabel = new JLabel("Please enter your details");
+        subLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        subLabel.setForeground(Color.GRAY);
+        subLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel passwordLabel = new JLabel("Password:");
-        passwordLabel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        passwordField = new JPasswordField();
+        // Name field with underline style
+        JLabel nameLabel = new JLabel("Name");
+        nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        nameField = new JTextField(20);
+        nameField.setBorder(new MatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+        nameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        nameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        nameField.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // Password field with underline style
+        JLabel passwordLabel = new JLabel("Password");
+        passwordLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        passwordLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        passwordField = new JPasswordField(20);
+        passwordField.setBorder(new MatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
         passwordField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        passwordField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        formPanel.add(usernameLabel);
-        formPanel.add(usernameField);
-        formPanel.add(passwordLabel);
-        formPanel.add(passwordField);
+        // Radio buttons styled as circles like in the reference image
+        studentRadio = new JRadioButton("Student");
+        examinerRadio = new JRadioButton("Examiner");
+        studentRadio.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        examinerRadio.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        studentRadio.setBackground(Color.WHITE);
+        examinerRadio.setBackground(Color.WHITE);
+        
+        // Use button group to maintain single selection
+        roleGroup = new ButtonGroup();
+        roleGroup.add(studentRadio);
+        roleGroup.add(examinerRadio);
 
-        // Login Button
-        JButton loginButton = new JButton("Login");
+        JPanel rolePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        rolePanel.setBackground(Color.WHITE);
+        rolePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        rolePanel.add(studentRadio);
+        rolePanel.add(Box.createHorizontalStrut(20));
+        rolePanel.add(examinerRadio);
+
+        // Fixed button panel
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new GridLayout(2, 1, 0, 10));
+        buttonPanel.setBackground(Color.WHITE);
+        buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        buttonPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+
+        JButton loginButton = new JButton("Log In");
         loginButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        loginButton.setBackground(new Color(0, 102, 204));
-        loginButton.setForeground(Color.WHITE);
+        loginButton.setBackground(new Color(73, 125, 116));
+        loginButton.setOpaque(true);
+        loginButton.setContentAreaFilled(true);
+
+        loginButton.setForeground(Color.BLACK);
+        loginButton.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
         loginButton.setFocusPainted(false);
-        loginButton.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                authenticateUser();
-            }
-        });
+        loginButton.setBorderPainted(false);
+        loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        buttonPanel.setBackground(new Color(240, 245, 250));
+        JButton signupButton = new JButton("Sign up");
+        signupButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        signupButton.setBackground(new Color(73, 125, 116));
+        
+signupButton.setOpaque(true);
+signupButton.setContentAreaFilled(true);
+        signupButton.setForeground(Color.BLACK);
+        signupButton.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
+        signupButton.setFocusPainted(false);
+        signupButton.setBorderPainted(false);
+        signupButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        loginButton.addActionListener(e -> loginUser());
+        signupButton.addActionListener(e -> signupUser());
+
         buttonPanel.add(loginButton);
+        buttonPanel.add(signupButton);
 
-        formPanel.add(new JLabel()); // Empty cell for layout
-        formPanel.add(buttonPanel);
+        // Add components to left panel with enough spacing
+        leftPanel.add(title);
+        leftPanel.add(Box.createVerticalStrut(15));
+        leftPanel.add(welcomeLabel);
+        leftPanel.add(Box.createVerticalStrut(5));
+        leftPanel.add(subLabel);
+        leftPanel.add(Box.createVerticalStrut(30));
+        leftPanel.add(nameLabel);
+        leftPanel.add(Box.createVerticalStrut(5));
+        leftPanel.add(nameField);
+        leftPanel.add(Box.createVerticalStrut(25));
+        leftPanel.add(passwordLabel);
+        leftPanel.add(Box.createVerticalStrut(5));
+        leftPanel.add(passwordField);
+        leftPanel.add(Box.createVerticalStrut(25));
+        leftPanel.add(rolePanel);
+        leftPanel.add(Box.createVerticalStrut(40));
+        leftPanel.add(buttonPanel);
+        leftPanel.add(Box.createVerticalGlue()); // Push everything up
 
-        mainPanel.add(formPanel, BorderLayout.CENTER);
+        // Right Panel (Image)
+JPanel rightPanel = new JPanel() {
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        setBackground(new Color(234, 233, 232));
 
-        // Footer
-        JLabel footerLabel = new JLabel("© 2025 Virtual Examination System", SwingConstants.CENTER);
-        footerLabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        footerLabel.setForeground(Color.GRAY);
-        mainPanel.add(footerLabel, BorderLayout.SOUTH);
+        // Load and display image
+        ImageIcon icon = new ImageIcon(getClass().getResource("/gui/Login.png"));
+        Image img = icon.getImage();
+        if (img != null) {
+            g.drawImage(img, getWidth() / 2 - img.getWidth(null) / 2,
+                        getHeight() / 2 - img.getHeight(null) / 2, this);
+        }
+    }
+};
 
-        add(mainPanel);
+
+
+
+        rightPanel.setPreferredSize(new Dimension(450, 600));
+
+        add(leftPanel, BorderLayout.WEST);
+        add(rightPanel, BorderLayout.EAST);
     }
 
-    private void authenticateUser() {
-        String username = usernameField.getText();
+    private void loginUser() {
+        String name = nameField.getText().trim();
         String password = new String(passwordField.getPassword());
 
-        // Here you would call your AuthService to validate credentials
-        // For now, just show a demo portal based on username
-        if (username.startsWith("U0")) {
-            if (username.matches("U0[0-9]") && !username.equals("U011")) {
-                new StudentPortal(username).setVisible(true);
+        if (name.isEmpty() || password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields.");
+            return;
+        }
+
+        User user = authService.login(name, password);
+        if (user != null) {
+            JOptionPane.showMessageDialog(this, "Login successful!");
+            if (studentRadio.isSelected()) {
+                new StudentPortal(user.getUserId()).setVisible(true);
             } else {
-                new ExaminerPortal(username).setVisible(true);
+                new ExaminerPortal(user.getUserId()).setVisible(true);
             }
             this.dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Invalid credentials", "Login Failed", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Invalid credentials!", "Login Failed", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void signupUser() {
+        String name = nameField.getText().trim();
+        String password = new String(passwordField.getPassword());
+
+        if (name.isEmpty() || password.isEmpty() || (!studentRadio.isSelected() && !examinerRadio.isSelected())) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields and select a role.");
+            return;
+        }
+
+        if (studentRadio.isSelected()) {
+            String course = JOptionPane.showInputDialog(this, "Enter Course:");
+            String yearStr = JOptionPane.showInputDialog(this, "Enter Academic Year:");
+            try {
+                int year = Integer.parseInt(yearStr);
+                Student student = new Student(null, name, password, course, year);
+                Student registered = authService.registerStudent(student);
+                if (registered != null) {
+                    JOptionPane.showMessageDialog(this, "Student registered! Your ID: " + registered.getUserId());
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Academic year must be a number.");
+            }
+        } else if (examinerRadio.isSelected()) {
+            String dept = JOptionPane.showInputDialog(this, "Enter Department:");
+            Examiner examiner = new Examiner(null, name, password, dept);
+            Examiner registered = authService.registerExaminer(examiner);
+            if (registered != null) {
+                JOptionPane.showMessageDialog(this, "Examiner registered! Your ID: " + registered.getUserId());
+            }
         }
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            new LoginPage().setVisible(true);
-        });
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        SwingUtilities.invokeLater(() -> new LoginPage().setVisible(true));
     }
 }

@@ -3,28 +3,16 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/main/Man.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/gui/LoginPage.java</file>
             <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/gui/StudentPortal.java</file>
             <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/gui/ExaminerPortal.java</file>
             <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/gui/ExamPage.java</file>
             <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/gui/ResultPage.java</file>
             <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/model/User.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/model/Student.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/model/Exam.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/db/DBConnection.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/services/AuthService.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/services/ExamService.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/services/ResultService.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/services/ReportService.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/utils/TimerManager.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/utils/UIHelper.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/services/Schedulable.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/db_config.properties</file>
             <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/model/Examiner.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/model/Question.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/model/Option.java</file>
-            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/services/ResponseService.java</file>
+            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/gui/LoginPage.java</file>
+            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/services/AuthService.java</file>
+            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/model/Student.java</file>
+            <file>file:/Users/pranamimishra/NetBeansProjects/VirtualExaminationSystem/src/gui/Login.png</file>
         </group>
     </open-files>
 </project-private>

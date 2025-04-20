@@ -105,7 +105,7 @@ public class AuthService {
         cs.setString(3, examinerWithoutId.getDepartment());
         cs.registerOutParameter(4, Types.VARCHAR); // OUT userId
 
-        cs.execute(); //calling registerExamindr procedure from backend
+        cs.execute(); //calling registerExaminer procedure from backend
 
         String generatedId = cs.getString(4);
         if (generatedId!=null) {
