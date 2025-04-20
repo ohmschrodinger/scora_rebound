@@ -236,5 +236,5 @@ JPanel rightPanel = new JPanel() {
             e.printStackTrace();
         }
         SwingUtilities.invokeLater(() -> new LoginPage().setVisible(true));
-    }
+    } 
 }
