@@ -201,11 +201,14 @@ JPanel rightPanel = new JPanel() {
         String name = nameField.getText().trim();
         String password = new String(passwordField.getPassword());
 
-        if (name.isEmpty() || password.isEmpty() || (!studentRadio.isSelected() && !examinerRadio.isSelected())) {
-            JOptionPane.showMessageDialog(this, "Please fill all fields and select a role.");
+        if (name.isEmpty() || password.isEmpty() || 
+        (!studentRadio.isSelected() && !examinerRadio.isSelected()) || 
+        name.matches(".*\\d.*")) {
+
+            JOptionPane.showMessageDialog(this, "Please fill all fields, select a role, and make sure the name doesn't contain numbers.");
             return;
         }
-
+        //ADD NUMBER ERROR HANDLING
         if (studentRadio.isSelected()) {
             String course = JOptionPane.showInputDialog(this, "Enter Course:");
             String yearStr = JOptionPane.showInputDialog(this, "Enter Academic Year:");
