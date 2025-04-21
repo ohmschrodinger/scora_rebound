@@ -166,39 +166,46 @@ public class StudentPortal extends JFrame {
     }
     
     private Object[][] getPastResultsData() {
-        try {
-            Connection conn = DBConnection.getConnection();
-            String query = "SELECT r.ResultID, e.ExamID, e.Subject, r.Score, r.Grade, pr.Accuracy, pr.Ranks " +
-                          "FROM Result r " +
-                          "JOIN Exam e ON r.ExamID = e.ExamID " +
-                          "JOIN PerformanceReport pr ON r.ResultID = pr.ResultID " +
-                          "WHERE r.UserID = ?";
-            PreparedStatement ps = conn.prepareStatement(query);
-            ps.setString(1, userId);
-            ResultSet rs = ps.executeQuery();
-            
-            // Count rows
-            rs.last();
-            int rowCount = rs.getRow();
-            rs.beforeFirst();
-            
-            Object[][] data = new Object[rowCount][6];
-            int i = 0;
-            while (rs.next()) {
-                data[i][0] = rs.getString("ExamID");
-                data[i][1] = rs.getString("Subject");
-                data[i][2] = rs.getString("Score");
-                data[i][3] = rs.getString("Grade");
-                data[i][4] = rs.getString("Accuracy");
-                data[i][5] = rs.getString("Ranks");
-                i++;
-            }
-            return data;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new Object[0][0];
+    try {
+        Connection conn = DBConnection.getConnection();
+        String query = "SELECT r.ResultID, e.ExamID, e.Subject, r.Score, r.Grade, pr.Accuracy, pr.Ranks " +
+                       "FROM Result r " +
+                       "JOIN Exam e ON r.ExamID = e.ExamID " +
+                       "JOIN PerformanceReport pr ON r.ResultID = pr.ResultID " +
+                       "WHERE r.UserID = ?";
+        
+        PreparedStatement ps = conn.prepareStatement(
+            query,
+            ResultSet.TYPE_SCROLL_INSENSITIVE,
+            ResultSet.CONCUR_READ_ONLY
+        );
+        
+        ps.setString(1, userId);
+        ResultSet rs = ps.executeQuery();
+        
+        // Count rows
+        rs.last();
+        int rowCount = rs.getRow();
+        rs.beforeFirst();
+        
+        Object[][] data = new Object[rowCount][6];
+        int i = 0;
+        while (rs.next()) {
+            data[i][0] = rs.getString("ExamID");
+            data[i][1] = rs.getString("Subject");
+            data[i][2] = rs.getString("Score");
+            data[i][3] = rs.getString("Grade");
+            data[i][4] = rs.getString("Accuracy");
+            data[i][5] = rs.getString("Ranks");
+            i++;
         }
+        return data;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return new Object[0][0];
     }
+}
+
     
     private JPanel createProfilePanel() {
         JPanel panel = new JPanel(new BorderLayout());

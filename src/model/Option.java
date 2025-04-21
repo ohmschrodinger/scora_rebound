@@ -27,13 +27,13 @@ public class Option {
     
     //getter methods
     public String getOptionId(){ return this.optionId;  }
-    public String text(){ return this.text;  }
+    public String getText(){ return this.text;  }
     public String getQuestionId(){ return this.questionId;  }
     public char is_correct() { return this.is_correct; }
     
     //setter method
     public void getOptionId(String optionId){ this.optionId=optionId;  }
-    public void text(String text){  this.text=text;  }
+    public void setText(String text){  this.text=text;  }
     public void getQuestionId(String questionId ){ this.questionId=questionId;  }
     public void is_correct(char is_correct) { this.is_correct=is_correct; }
     
