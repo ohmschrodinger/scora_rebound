@@ -32,7 +32,8 @@ public class Exam {
     public int getTotalMarks() { return totalMarks; }
     public String getExaminerID() { return userID; }
     public String getDuration() { return duration; }
-    public String status() { return status; }
+    public String getStatus() { return status; }
+    public String getUserID() { return userID; }
 
     // Setters
     public void setExamID(String examID) { this.examID = examID; }
@@ -41,4 +42,5 @@ public class Exam {
     public void setExaminerID(String examinerID) { this.userID = userID; }
      public void getDuration(String duration) { this.duration=duration; }
     public void status(String status) { this.status=status; }
+    public void setUserID(String userID) { this.userID = userID; }
 }
