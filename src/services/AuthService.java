@@ -22,16 +22,43 @@ public class AuthService {
         try
         {
          Connection conn=DBConnection.getConnection();
-         String str="select name from user where userId=? and password=?";
+         // Check if user exists and get their role and additional details
+         String str="SELECT u.name, u.userId, u.password, " +
+                   "CASE " +
+                   "WHEN s.userId IS NOT NULL THEN 'student' " +
+                   "WHEN e.userId IS NOT NULL THEN 'examiner' " +
+                   "ELSE 'unknown' " +
+                   "END as role, " +
+                   "s.course, s.academicYear, e.department " +
+                   "FROM user u " +
+                   "LEFT JOIN student s ON u.userId = s.userId " +
+                   "LEFT JOIN examiner e ON u.userId = e.userId " +
+                   "WHERE u.userId=? AND u.password=?";
          PreparedStatement ps=conn.prepareStatement(str);
          ps.setString(1,userId);
          ps.setString(2,password);
          ResultSet rs=ps.executeQuery();
           
-         if (rs.next())
-            return new User(userId, rs.getString("name"), password); //returning the user object for given user
-         else 
-             return null;// login failed
+         if (rs.next()) {
+             String role = rs.getString("role");
+             if ("student".equals(role)) {
+                 return new Student(
+                     userId, 
+                     rs.getString("name"), 
+                     password,
+                     rs.getString("course"),
+                     rs.getInt("academicYear")
+                 );
+             } else if ("examiner".equals(role)) {
+                 return new Examiner(
+                     userId, 
+                     rs.getString("name"), 
+                     password,
+                     rs.getString("department")
+                 );
+             }
+         }
+         return null; // login failed
         }
        catch (SQLException e) {
         JOptionPane.showMessageDialog(null, "Database error: " + e.getMessage());

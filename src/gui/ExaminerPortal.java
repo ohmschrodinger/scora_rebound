@@ -61,7 +61,7 @@ public class ExaminerPortal extends JFrame {
     
     private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(73, 125, 116));
+        headerPanel.setBackground(new Color(73, 125, 116)); // Teal green color
         headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         
         try {
@@ -82,12 +82,15 @@ public class ExaminerPortal extends JFrame {
         }
         
         JButton logoutBtn = new JButton("Logout");
+        logoutBtn.setBackground(Color.WHITE);
+        logoutBtn.setForeground(new Color(73, 125, 116));
+        logoutBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        logoutBtn.setBorderPainted(false);
+        logoutBtn.setFocusPainted(false);
         logoutBtn.addActionListener(e -> {
             new LoginPage().setVisible(true);
             dispose();
         });
-        logoutBtn.setBackground(Color.WHITE);
-        logoutBtn.setForeground(new Color(73, 125, 116));
         headerPanel.add(logoutBtn, BorderLayout.EAST);
         
         return headerPanel;
@@ -96,7 +99,7 @@ public class ExaminerPortal extends JFrame {
     private JPanel createNavigationPanel() {
         JPanel navPanel = new JPanel();
         navPanel.setLayout(new BoxLayout(navPanel, BoxLayout.Y_AXIS));
-        navPanel.setBackground(new Color(234, 233, 232));
+        navPanel.setBackground(new Color(234, 233, 232)); // Light gray background
         navPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
         
         JButton dashboardBtn = createNavButton("Dashboard", "dashboard");
@@ -119,10 +122,10 @@ public class ExaminerPortal extends JFrame {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
         button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        button.setBackground(new Color(73, 125, 116));
-        button.setOpaque(true);
-        button.setContentAreaFilled(true);
-        button.setForeground(Color.BLACK);
+        button.setBackground(new Color(73, 125, 116)); // Teal green color
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setBorderPainted(false);
         button.setFocusPainted(false);
         button.addActionListener(e -> {
             // Remove the current panel
@@ -157,9 +160,11 @@ public class ExaminerPortal extends JFrame {
     private JPanel createDashboardPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(234, 233, 232)); // Light gray background
         
         JLabel titleLabel = new JLabel("Examiner Dashboard");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(73, 125, 116)); // Teal green color
         panel.add(titleLabel, BorderLayout.NORTH);
         
         // Stats panel
@@ -175,7 +180,7 @@ public class ExaminerPortal extends JFrame {
             ps1.setString(1, userId);
             ResultSet rs1 = ps1.executeQuery();
             rs1.next();
-            addStatCard(statsPanel, "Total Exams", rs1.getString("total"), new Color(100, 149, 237));
+            addStatCard(statsPanel, "Total Exams", rs1.getString("total"), new Color(52, 152, 219)); // Blue
             
             // Total questions added
             PreparedStatement ps2 = conn.prepareStatement(
@@ -183,7 +188,7 @@ public class ExaminerPortal extends JFrame {
             ps2.setString(1, userId);
             ResultSet rs2 = ps2.executeQuery();
             rs2.next();
-            addStatCard(statsPanel, "Total Questions", rs2.getString("total"), new Color(60, 179, 113));
+            addStatCard(statsPanel, "Total Questions", rs2.getString("total"), new Color(46, 204, 113)); // Green
             
             // Active exams
             PreparedStatement ps3 = conn.prepareStatement(
@@ -191,7 +196,7 @@ public class ExaminerPortal extends JFrame {
             ps3.setString(1, userId);
             ResultSet rs3 = ps3.executeQuery();
             rs3.next();
-            addStatCard(statsPanel, "Active Exams", rs3.getString("total"), new Color(238, 130, 238));
+            addStatCard(statsPanel, "Active Exams", rs3.getString("total"), new Color(155, 89, 182)); // Purple
             
             // Students attempted
             PreparedStatement ps4 = conn.prepareStatement(
@@ -200,7 +205,7 @@ public class ExaminerPortal extends JFrame {
             ps4.setString(1, userId);
             ResultSet rs4 = ps4.executeQuery();
             rs4.next();
-            addStatCard(statsPanel, "Students Attempted", rs4.getString("total"), new Color(255, 165, 0));
+            addStatCard(statsPanel, "Students Attempted", rs4.getString("total"), new Color(230, 126, 34)); // Orange
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -231,9 +236,21 @@ public class ExaminerPortal extends JFrame {
     
     private JPanel createExamsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(234, 233, 232)); // Light gray background
+        
+        JLabel titleLabel = new JLabel("Manage Exams");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(73, 125, 116)); // Teal green color
+        panel.add(titleLabel, BorderLayout.NORTH);
         
         // Create exam button
         JButton createExamBtn = new JButton("Create New Exam");
+        createExamBtn.setBackground(new Color(46, 204, 113)); // Green color
+        createExamBtn.setForeground(Color.WHITE);
+        createExamBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        createExamBtn.setBorderPainted(false);
+        createExamBtn.setFocusPainted(false);
         createExamBtn.addActionListener(e -> showCreateExamDialog());
         
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -244,6 +261,8 @@ public class ExaminerPortal extends JFrame {
         String[] columnNames = {"Exam ID", "Subject", "Total Marks", "Duration", "Status", "Actions"};
         Object[][] data = getExamsData();
         JTable examsTable = new JTable(data, columnNames);
+        examsTable.setRowHeight(30);
+        examsTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         
         // Add delete button to each row
         examsTable.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
@@ -251,8 +270,10 @@ public class ExaminerPortal extends JFrame {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 JButton deleteBtn = new JButton("Delete");
-                deleteBtn.setBackground(new Color(255, 99, 71)); // Tomato color
+                deleteBtn.setBackground(new Color(231, 76, 60)); // Red color
                 deleteBtn.setForeground(Color.WHITE);
+                deleteBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                deleteBtn.setBorderPainted(false);
                 deleteBtn.setFocusPainted(false);
                 panel.add(deleteBtn);
                 return panel;
@@ -264,8 +285,10 @@ public class ExaminerPortal extends JFrame {
             public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
                 JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 JButton deleteBtn = new JButton("Delete");
-                deleteBtn.setBackground(new Color(255, 99, 71));
+                deleteBtn.setBackground(new Color(231, 76, 60));
                 deleteBtn.setForeground(Color.WHITE);
+                deleteBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                deleteBtn.setBorderPainted(false);
                 deleteBtn.setFocusPainted(false);
                 
                 deleteBtn.addActionListener(e -> {
@@ -290,8 +313,6 @@ public class ExaminerPortal extends JFrame {
                                     "Success",
                                     JOptionPane.INFORMATION_MESSAGE
                                 );
-                                
-                                // Refresh the exams panel
                                 refreshPanel("exams");
                             } else {
                                 JOptionPane.showMessageDialog(
@@ -429,15 +450,22 @@ public class ExaminerPortal extends JFrame {
     private JPanel createQuestionsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(234, 233, 232)); // Light gray background
         
         JLabel titleLabel = new JLabel("Manage Questions");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(73, 125, 116)); // Teal green color
         panel.add(titleLabel, BorderLayout.NORTH);
         
         // Toolbar with buttons
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         
         JButton addQuestionBtn = new JButton("Add New Question");
+        addQuestionBtn.setBackground(new Color(46, 204, 113)); // Green color
+        addQuestionBtn.setForeground(Color.WHITE);
+        addQuestionBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        addQuestionBtn.setBorderPainted(false);
+        addQuestionBtn.setFocusPainted(false);
         addQuestionBtn.addActionListener(e -> showAddQuestionDialog());
         
         toolbar.add(addQuestionBtn);
@@ -457,8 +485,10 @@ public class ExaminerPortal extends JFrame {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 JButton deleteBtn = new JButton("Delete");
-                deleteBtn.setBackground(new Color(255, 99, 71)); // Tomato color
+                deleteBtn.setBackground(new Color(231, 76, 60)); // Red color
                 deleteBtn.setForeground(Color.WHITE);
+                deleteBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                deleteBtn.setBorderPainted(false);
                 deleteBtn.setFocusPainted(false);
                 panel.add(deleteBtn);
                 return panel;
@@ -470,8 +500,10 @@ public class ExaminerPortal extends JFrame {
             public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
                 JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 JButton deleteBtn = new JButton("Delete");
-                deleteBtn.setBackground(new Color(255, 99, 71));
+                deleteBtn.setBackground(new Color(231, 76, 60));
                 deleteBtn.setForeground(Color.WHITE);
+                deleteBtn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+                deleteBtn.setBorderPainted(false);
                 deleteBtn.setFocusPainted(false);
                 
                 deleteBtn.addActionListener(e -> {
@@ -496,8 +528,6 @@ public class ExaminerPortal extends JFrame {
                                     "Success",
                                     JOptionPane.INFORMATION_MESSAGE
                                 );
-                                
-                                // Refresh the questions panel
                                 refreshPanel("questions");
                             } else {
                                 JOptionPane.showMessageDialog(
@@ -567,13 +597,20 @@ public class ExaminerPortal extends JFrame {
     private JPanel createResultsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(234, 233, 232)); // Light gray background
         
         // Title panel with refresh button
         JPanel titlePanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel("Exam Results");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(73, 125, 116)); // Teal green color
         
         JButton refreshButton = new JButton("Refresh");
+        refreshButton.setBackground(new Color(73, 125, 116)); // Teal green color
+        refreshButton.setForeground(Color.WHITE);
+        refreshButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        refreshButton.setBorderPainted(false);
+        refreshButton.setFocusPainted(false);
         refreshButton.addActionListener(e -> refreshPanel("results"));
         
         titlePanel.add(titleLabel, BorderLayout.WEST);
@@ -586,7 +623,9 @@ public class ExaminerPortal extends JFrame {
         
         // Exam filter
         JLabel examLabel = new JLabel("Select Exam:");
+        examLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         JComboBox<String> examComboBox = new JComboBox<>();
+        examComboBox.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         try {
             Connection conn = DBConnection.getConnection();
             PreparedStatement ps = conn.prepareStatement(
@@ -616,8 +655,6 @@ public class ExaminerPortal extends JFrame {
         JTable resultsTable = new JTable(data, columnNames);
         resultsTable.setRowHeight(30);
         resultsTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-        
-        // Make table non-editable
         resultsTable.setDefaultEditor(Object.class, null);
         
         // Add action listener to exam filter

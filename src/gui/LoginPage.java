@@ -167,7 +167,28 @@ public class LoginPage extends JFrame {
 
         User user = authService.login(userId, password);
         if (user != null) {
-            if (studentRadio.isSelected()) {
+            // Check if the selected role matches the user's actual role
+            boolean isStudent = user instanceof Student;
+            boolean isExaminer = user instanceof Examiner;
+            
+            if (studentRadio.isSelected() && !isStudent) {
+                JOptionPane.showMessageDialog(this, 
+                    "You are not authorized to login as a student!", 
+                    "Access Denied", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            if (examinerRadio.isSelected() && !isExaminer) {
+                JOptionPane.showMessageDialog(this, 
+                    "You are not authorized to login as an examiner!", 
+                    "Access Denied", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // If role matches, proceed with login
+            if (isStudent) {
                 new StudentPortal(user.getUserId()).setVisible(true);
             } else {
                 new ExaminerPortal(user.getUserId()).setVisible(true);

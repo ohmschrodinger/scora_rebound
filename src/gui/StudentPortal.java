@@ -73,7 +73,7 @@ public class StudentPortal extends JFrame {
      */
     private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setBackground(new Color(73, 125, 116));
+        headerPanel.setBackground(new Color(73, 125, 116)); // Teal green color
         headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
         try {
@@ -100,13 +100,16 @@ public class StudentPortal extends JFrame {
 
         // Create logout button
         JButton logoutBtn = new JButton("Logout");
+        logoutBtn.setBackground(Color.WHITE);
+        logoutBtn.setForeground(new Color(73, 125, 116));
+        logoutBtn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        logoutBtn.setBorderPainted(false);
+        logoutBtn.setFocusPainted(false);
         logoutBtn.addActionListener(e -> {
             // When logout is clicked, return to login page and dispose this window
             new LoginPage().setVisible(true);
             dispose();
         });
-        logoutBtn.setBackground(Color.WHITE);
-        logoutBtn.setForeground(new Color(73, 125, 116));
         headerPanel.add(logoutBtn, BorderLayout.EAST);
 
         return headerPanel;
@@ -120,18 +123,18 @@ public class StudentPortal extends JFrame {
     private JPanel createNavigationPanel() {
         JPanel navPanel = new JPanel();
         navPanel.setLayout(new BoxLayout(navPanel, BoxLayout.Y_AXIS));
-        navPanel.setBackground(new Color(234, 233, 232));
+        navPanel.setBackground(new Color(234, 233, 232)); // Light gray background
         navPanel.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
 
         // Create buttons for each section
-        JButton upcomingExamsBtn = createNavButton("Upcoming Exams", "upcoming");
-        JButton pastResultsBtn = createNavButton("Past Results", "results");
-        JButton profileBtn = createNavButton("My Profile", "profile");
+        JButton upcomingBtn = createNavButton("Upcoming Exams", "upcoming");
+        JButton resultsBtn = createNavButton("Past Results", "results");
+        JButton profileBtn = createNavButton("Profile", "profile");
 
         // Add buttons to navigation panel with spacing
-        navPanel.add(upcomingExamsBtn);
+        navPanel.add(upcomingBtn);
         navPanel.add(Box.createVerticalStrut(15));
-        navPanel.add(pastResultsBtn);
+        navPanel.add(resultsBtn);
         navPanel.add(Box.createVerticalStrut(15));
         navPanel.add(profileBtn);
 
@@ -149,11 +152,15 @@ public class StudentPortal extends JFrame {
         JButton button = new JButton(text);
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
         button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        button.setBackground(new Color(73, 125, 116));
-        button.setForeground(Color.BLACK);
+        button.setBackground(new Color(73, 125, 116)); // Teal green color
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setBorderPainted(false);
         button.setFocusPainted(false);
         // When clicked, show the corresponding card in the card layout
-        button.addActionListener(e -> cardLayout.show(cardPanel, cardName));
+        button.addActionListener(e -> {
+            cardLayout.show(cardPanel, cardName);
+        });
         return button;
     }
 
@@ -165,9 +172,11 @@ public class StudentPortal extends JFrame {
     private JPanel createUpcomingExamsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(234, 233, 232)); // Light gray background
 
-        JLabel titleLabel = new JLabel("Eligible Exams");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        JLabel titleLabel = new JLabel("Upcoming Exams");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(73, 125, 116)); // Teal green color
         panel.add(titleLabel, BorderLayout.NORTH);
 
         // Table to display eligible exams
@@ -278,171 +287,99 @@ public class StudentPortal extends JFrame {
      *
      * @return JPanel with past results data
      */
-private JPanel createPastResultsPanel() {
-    JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    private JPanel createPastResultsPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(234, 233, 232)); // Light gray background
 
-    JLabel titleLabel = new JLabel("Past Results");
-    titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-    panel.add(titleLabel, BorderLayout.NORTH);
+        JLabel titleLabel = new JLabel("Past Results");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(73, 125, 116)); // Teal green color
+        panel.add(titleLabel, BorderLayout.NORTH);
 
-    // Table to display past results - MODIFIED: changed columns
-    String[] columnNames = {"Exam ID", "Subject", "Result"};
-    Object[][] data = getPastResultsData();
+        // Table to display past results - MODIFIED: changed columns
+        String[] columnNames = {"Exam ID", "Subject", "Result"};
+        Object[][] data = getPastResultsData();
 
-    // Create table model that makes only the Result column editable (for the button)
-    DefaultTableModel model = new DefaultTableModel(data, columnNames) {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            // Make only the Result column editable (for the button)
-            return column == 2;
-        }
-    };
+        // Create table model that makes only the Result column editable (for the button)
+        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // Make only the Result column editable (for the button)
+                return column == 2;
+            }
+        };
 
-    JTable resultsTable = new JTable(model);
-    resultsTable.setRowHeight(30);
-    resultsTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
-    
-    // Set up the button column with custom renderer and editor
-    resultsTable.getColumnModel().getColumn(2).setCellRenderer(new ButtonRenderer());
-    resultsTable.getColumnModel().getColumn(2).setCellEditor(new ResultButtonEditor(new JCheckBox(), this));
+        JTable resultsTable = new JTable(model);
+        resultsTable.setRowHeight(30);
+        resultsTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        
+        // Set up the button column with custom renderer and editor
+        resultsTable.getColumnModel().getColumn(2).setCellRenderer(new ButtonRenderer());
+        resultsTable.getColumnModel().getColumn(2).setCellEditor(new ResultButtonEditor(new JCheckBox(), this));
 
-    JScrollPane scrollPane = new JScrollPane(resultsTable);
-    panel.add(scrollPane, BorderLayout.CENTER);
+        JScrollPane scrollPane = new JScrollPane(resultsTable);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
-    return panel;
-}
+        return panel;
+    }
 
     /**
      * Retrieves past results data from the database
      *
      * @return 2D array of result data to display in table
      */
- private Object[][] getPastResultsData() {
-    try {
-        Connection conn = DBConnection.getConnection();
-        String query = "SELECT a.ExamID, e.Subject " +
-                       "FROM Attempt a " +
-                       "JOIN Exam e ON a.ExamID = e.ExamID " +
-                       "WHERE a.UserID = ?";
-        PreparedStatement ps = conn.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE,
-                                                     ResultSet.CONCUR_READ_ONLY);
-        ps.setString(1, userId);
-        ResultSet rs = ps.executeQuery();
+    private Object[][] getPastResultsData() {
+        try {
+            Connection conn = DBConnection.getConnection();
+            String query = "SELECT a.ExamID, e.Subject " +
+                           "FROM Attempt a " +
+                           "JOIN Exam e ON a.ExamID = e.ExamID " +
+                           "WHERE a.UserID = ?";
+            PreparedStatement ps = conn.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                                         ResultSet.CONCUR_READ_ONLY);
+            ps.setString(1, userId);
+            ResultSet rs = ps.executeQuery();
 
-        // Count rows
-        rs.last();
-        int rowCount = rs.getRow();
-        rs.beforeFirst();
+            // Count rows
+            rs.last();
+            int rowCount = rs.getRow();
+            rs.beforeFirst();
 
-        Object[][] data = new Object[rowCount][3]; // 3 columns: ExamID, Subject, Button
-        int i = 0;
-        while (rs.next()) {
-            data[i][0] = rs.getString("ExamID");
-            data[i][1] = rs.getString("Subject");
-            data[i][2] = "View Result"; // Button text, result page will handle generation
-            i++;
+            Object[][] data = new Object[rowCount][3]; // 3 columns: ExamID, Subject, Button
+            int i = 0;
+            while (rs.next()) {
+                data[i][0] = rs.getString("ExamID");
+                data[i][1] = rs.getString("Subject");
+                data[i][2] = "View Result"; // Button text, result page will handle generation
+                i++;
+            }
+
+            // Close resources
+            rs.close();
+            ps.close();
+            conn.close();
+
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Object[0][0];
         }
-
-        // Close resources
-        rs.close();
-        ps.close();
-        conn.close();
-
-        return data;
-    } catch (Exception e) {
-        e.printStackTrace();
-        return new Object[0][0];
     }
-}
-
 
     /**
      * Creates the panel showing user profile information
      *
      * @return JPanel with profile data
      */
-   
-   /**
- * Custom button editor class for the result view button
- * Handles button click events in result table cells
- */
-class ResultButtonEditor extends DefaultCellEditor {
-    protected JButton button;
-    private String label;
-    private boolean isPushed;
-    private StudentPortal parent;
-    private int row, column;
-    private JTable table;
-    
-    /**
-     * Constructor sets up the button and stores reference to parent
-     * @param checkBox Required by DefaultCellEditor
-     * @param parent Reference to StudentPortal for access to userId
-     */
-    public ResultButtonEditor(JCheckBox checkBox, StudentPortal parent) {
-        super(checkBox);
-        this.parent = parent;
-        button = new JButton();
-        button.setOpaque(true);
-        button.setBackground(new Color(73, 125, 116));
-        button.setForeground(Color.WHITE);
-        // When button is clicked, stop editing to trigger getCellEditorValue
-        button.addActionListener(e -> fireEditingStopped());
-    }
-    
-    /**
-     * Called when editing starts, sets up the component
-     * @return The button component configured for this cell
-     */
-    @Override
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        // Store table, row, and column for later use when button is clicked
-        this.table = table;
-        this.row = row;
-        this.column = column;
-        label = (value == null) ? "" : value.toString();
-        button.setText(label);
-        isPushed = true;
-        return button;
-    }
-    
-    /**
-     * Called when editing stops, handles the button click action
-     * @return The value to display in the cell
-     */
-    @Override
-    public Object getCellEditorValue() {
-        if (isPushed) {
-            // Get the exam ID from the correct row index
-            String examId = table.getValueAt(row, 0).toString();
-            
-            // Actually create and display the ResultPage instead of just showing a message
-            SwingUtilities.invokeLater(() -> {
-                new ResultPage(parent.getUserId(), examId).setVisible(true);
-                parent.dispose(); // Close the student portal
-            });
-        }
-        isPushed = false;
-        return label;
-    }
-    
-    /**
-     * Called to stop editing, resets the isPushed flag
-     */
-    @Override
-    public boolean stopCellEditing() {
-        isPushed = false;
-        return super.stopCellEditing();
-    }
-}
-
- private JPanel createProfilePanel() {
+    private JPanel createProfilePanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(new Color(234, 233, 232)); // Light gray background
         
-        JLabel titleLabel = new JLabel("My Profile");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        JLabel titleLabel = new JLabel("Profile");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        titleLabel.setForeground(new Color(73, 125, 116)); // Teal green color
         panel.add(titleLabel, BorderLayout.NORTH);
         
         JPanel profilePanel = new JPanel(new GridLayout(5, 2, 10, 10));
@@ -594,6 +531,83 @@ class ResultButtonEditor extends DefaultCellEditor {
                 SwingUtilities.invokeLater(() -> {
 //                    new ExamPage(examId, parent.getUserId()).setVisible(true);
                        new ExamPage(parent.getUserId(), examId).setVisible(true);
+                    parent.dispose(); // Close the student portal
+                });
+            }
+            isPushed = false;
+            return label;
+        }
+        
+        /**
+         * Called to stop editing, resets the isPushed flag
+         */
+        @Override
+        public boolean stopCellEditing() {
+            isPushed = false;
+            return super.stopCellEditing();
+        }
+    }
+
+    /**
+     * Custom button editor class for the result view button
+     * Handles button click events in result table cells
+     */
+    class ResultButtonEditor extends DefaultCellEditor {
+        protected JButton button;
+        private String label;
+        private boolean isPushed;
+        private StudentPortal parent;
+        private int row, column;
+        private JTable table;
+        
+        /**
+         * Constructor sets up the button and stores reference to parent
+         * @param checkBox Required by DefaultCellEditor
+         * @param parent Reference to StudentPortal for access to userId
+         */
+        public ResultButtonEditor(JCheckBox checkBox, StudentPortal parent) {
+            super(checkBox);
+            this.parent = parent;
+            button = new JButton();
+            button.setOpaque(true);
+            button.setBackground(new Color(73, 125, 116)); // Teal green color
+            button.setForeground(Color.WHITE);
+            button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+            button.setBorderPainted(false);
+            button.setFocusPainted(false);
+            // When button is clicked, stop editing to trigger getCellEditorValue
+            button.addActionListener(e -> fireEditingStopped());
+        }
+        
+        /**
+         * Called when editing starts, sets up the component
+         * @return The button component configured for this cell
+         */
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            // Store table, row, and column for later use when button is clicked
+            this.table = table;
+            this.row = row;
+            this.column = column;
+            label = (value == null) ? "" : value.toString();
+            button.setText(label);
+            isPushed = true;
+            return button;
+        }
+        
+        /**
+         * Called when editing stops, handles the button click action
+         * @return The value to display in the cell
+         */
+        @Override
+        public Object getCellEditorValue() {
+            if (isPushed) {
+                // Get the exam ID from the correct row index
+                String examId = table.getValueAt(row, 0).toString();
+                
+                // Actually create and display the ResultPage instead of just showing a message
+                SwingUtilities.invokeLater(() -> {
+                    new ResultPage(parent.getUserId(), examId).setVisible(true);
                     parent.dispose(); // Close the student portal
                 });
             }

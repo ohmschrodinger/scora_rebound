@@ -51,8 +51,7 @@ public class ExamPage extends JFrame {
         this.examId = examId;
         this.examService = new ExamService();
         this.responseService = new ResponseService();
-//        this.questionMap = examService.getExamWithQuestions("E001");
-this.questionMap = examService.getExamWithQuestions(examId);
+        this.questionMap = examService.getExamWithQuestions(examId);
         this.questionList = new ArrayList<>(questionMap.keySet());
         this.questionOptionMap = new ConcurrentHashMap<>();
         
@@ -127,7 +126,7 @@ this.questionMap = examService.getExamWithQuestions(examId);
         
         // Right side panel for Subject and Timer
         JPanel rightHeaderPanel = new JPanel(new GridLayout(2, 1));
-        rightHeaderPanel.setBackground(new Color(76, 120, 111));
+        rightHeaderPanel.setBackground(new Color(73, 125, 116)); // Teal green color
         
         // Subject label
         subjectLabel = new JLabel("Subject: " + exam.getSubject());
@@ -151,17 +150,18 @@ this.questionMap = examService.getExamWithQuestions(examId);
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         contentPanel.setBorder(new EmptyBorder(20, 40, 20, 40));
-        contentPanel.setBackground(new Color(240, 240, 240));
+        contentPanel.setBackground(new Color(234, 233, 232)); // Light gray background
         
         // Question Label
         questionTextLabel = new JLabel();
         questionTextLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        questionTextLabel.setForeground(new Color(73, 125, 116)); // Teal green color
         questionTextLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         // Options Panel
         optionsPanel = new JPanel();
         optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
-        optionsPanel.setBackground(new Color(240, 240, 240));
+        optionsPanel.setBackground(new Color(234, 233, 232)); // Light gray background
         optionsPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         
         contentPanel.add(questionTextLabel);
@@ -171,15 +171,15 @@ this.questionMap = examService.getExamWithQuestions(examId);
         // Footer Panel
         JPanel footerPanel = new JPanel(new BorderLayout());
         footerPanel.setBorder(new EmptyBorder(10, 40, 20, 40));
-        footerPanel.setBackground(new Color(240, 240, 240));
+        footerPanel.setBackground(new Color(234, 233, 232)); // Light gray background
         
         // Navigation buttons panel
         JPanel navigationPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        navigationPanel.setBackground(new Color(240, 240, 240));
+        navigationPanel.setBackground(new Color(234, 233, 232)); // Light gray background
         
         previousButton = new JButton("Previous");
         previousButton.setPreferredSize(new Dimension(120, 45));
-        previousButton.setBackground(new Color(73, 125, 116));
+        previousButton.setBackground(new Color(231, 76, 60)); // Red color
         previousButton.setForeground(Color.WHITE);
         previousButton.setOpaque(true);
         previousButton.setContentAreaFilled(true);
@@ -188,11 +188,9 @@ this.questionMap = examService.getExamWithQuestions(examId);
         previousButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
         previousButton.addActionListener(e -> navigateToPreviousQuestion());
         
-
-        
         nextButton = new JButton("Next");
         nextButton.setPreferredSize(new Dimension(120, 45));
-        nextButton.setBackground(new Color(73, 125, 116));
+        nextButton.setBackground(new Color(46, 204, 113)); // Green color
         nextButton.setForeground(Color.WHITE);
         nextButton.setOpaque(true);
         nextButton.setContentAreaFilled(true);
@@ -207,38 +205,24 @@ this.questionMap = examService.getExamWithQuestions(examId);
         
         // Submit button panel
         JPanel submitPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        submitPanel.setBackground(new Color(240, 240, 240));
+        submitPanel.setBackground(new Color(234, 233, 232)); // Light gray background
         
         submitButton = new JButton("Submit");
         submitButton.setPreferredSize(new Dimension(120, 45));
-        submitButton.setBackground(new Color(73, 125, 116));
+        submitButton.setBackground(new Color(46, 204, 113)); // Green color
         submitButton.setForeground(Color.WHITE);
         submitButton.setOpaque(true);
         submitButton.setContentAreaFilled(true);
         submitButton.setFocusPainted(false);
         submitButton.setBorderPainted(false);
         submitButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        submitButton.addActionListener(e -> {
-            isSubmitButtonClicked = true; // Set flag BEFORE showing dialog to prevent anti-cheat
-            int confirm = JOptionPane.showConfirmDialog(
-                    this,
-                    "Are you sure you want to submit the exam?",
-                    "Submit Confirmation",
-                    JOptionPane.YES_NO_OPTION);
-            
-            if (confirm == JOptionPane.YES_OPTION) {
-                submitExam();
-            } else {
-                isSubmitButtonClicked = false; // Reset flag if canceled
-            }
-        });
+        submitButton.addActionListener(e -> submitExam());
         
         submitPanel.add(submitButton);
         
         footerPanel.add(navigationPanel, BorderLayout.WEST);
         footerPanel.add(submitPanel, BorderLayout.EAST);
         
-        // Add panels to the frame
         add(headerPanel, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);
         add(footerPanel, BorderLayout.SOUTH);
