@@ -1,5 +1,4 @@
 package gui;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -227,36 +226,35 @@ public class ExaminerPortal extends JFrame {
         return panel;
     }
     
-    private Object[][] getExamsData() {
-        try {
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement(
-                "SELECT ExamID, Subject, TotalMarks, Duration, Status FROM Exam WHERE UserID = ?");
-            ps.setString(1, userId);
-            ResultSet rs = ps.executeQuery();
-            
-            // Count rows
-            rs.last();
-            int rowCount = rs.getRow();
-            rs.beforeFirst();
-            
-            Object[][] data = new Object[rowCount][6];
-            int i = 0;
-            while (rs.next()) {
-                data[i][0] = rs.getString("ExamID");
-                data[i][1] = rs.getString("Subject");
-                data[i][2] = rs.getString("TotalMarks");
-                data[i][3] = rs.getString("Duration");
-                data[i][4] = rs.getString("Status");
-                data[i][5] = "Edit | Delete";
-                i++;
-            }
-            return data;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new Object[0][0];
+private Object[][] getExamsData() {
+    try {
+        Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(
+            "SELECT ExamID, Subject, TotalMarks, Duration, Status FROM Exam WHERE UserID = ?");
+        ps.setString(1, userId);
+        ResultSet rs = ps.executeQuery();
+
+        // Use a dynamic list to collect rows
+        java.util.List<Object[]> rows = new java.util.ArrayList<>();
+
+        while (rs.next()) {
+            Object[] row = new Object[6];
+            row[0] = rs.getString("ExamID");
+            row[1] = rs.getString("Subject");
+            row[2] = rs.getString("TotalMarks");
+            row[3] = rs.getString("Duration");
+            row[4] = rs.getString("Status");
+            row[5] = "Edit | Delete";
+            rows.add(row);
         }
+
+        return rows.toArray(new Object[0][0]);
+    } catch (Exception e) {
+        e.printStackTrace();
+        return new Object[0][0];
     }
+}
+
     
     private JPanel createQuestionsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -400,10 +398,43 @@ public class ExaminerPortal extends JFrame {
         JTextField durationField = new JTextField();
         
         JButton createBtn = new JButton("Create");
-        createBtn.addActionListener(e -> {
-            // Validate and create exam
-            dialog.dispose();
-        });
+        
+        
+createBtn.addActionListener(e -> {
+    String subject = subjectField.getText().trim();
+    String marksText = marksField.getText().trim();
+    String durationText = durationField.getText().trim();
+
+    if (subject.isEmpty() || marksText.isEmpty() || durationText.isEmpty()) {
+        JOptionPane.showMessageDialog(dialog, "Please fill all fields!", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
+    }
+
+    try {
+        int totalMarks = Integer.parseInt(marksText);
+        int duration = Integer.parseInt(durationText);
+
+        Connection conn = DBConnection.getConnection();
+        CallableStatement cs = conn.prepareCall("{call CREATE_EXAM_PROCEDURE(?, ?, ?, ?)}");
+        cs.setString(1, userId);
+        cs.setString(2, subject);
+        cs.setInt(3, totalMarks);
+        cs.setInt(4, duration);
+
+        cs.execute();
+        JOptionPane.showMessageDialog(dialog, "Exam created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+
+        dialog.dispose();
+        // Optional: refresh exam table here if needed
+
+    } catch (NumberFormatException ex) {
+        JOptionPane.showMessageDialog(dialog, "Enter valid numeric values for marks and duration.", "Error", JOptionPane.ERROR_MESSAGE);
+    } catch (Exception ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(dialog, "Error creating exam: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+    }
+});
+
         
         panel.add(subjectLabel);
         panel.add(subjectField);
