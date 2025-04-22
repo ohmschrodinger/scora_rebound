@@ -173,4 +173,30 @@ public class ExamService {
         }
         return options;
     }
+    
+    
+    
+    public String createNewExamProcedure(String userId, String subject, int totalMarks, String duration) {
+    String message = "";
+    try (Connection conn = getConnection();
+         CallableStatement cs = conn.prepareCall("{CALL create_new_exam(?, ?, ?, ?)}")) {
+
+        cs.setString(1, userId);
+        cs.setString(2, subject);
+        cs.setInt(3, totalMarks);
+        cs.setString(4, duration);
+
+        ResultSet rs = cs.executeQuery();
+        if (rs.next()) {
+            message = rs.getString("Message");
+        }
+
+        rs.close();
+    } catch (SQLException | ClassNotFoundException e) {
+        e.printStackTrace();
+        message = "Error: " + e.getMessage();
+    }
+    return message;
+}
+    
 }

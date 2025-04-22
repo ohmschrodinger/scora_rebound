@@ -51,7 +51,8 @@ public class ExamPage extends JFrame {
         this.examId = examId;
         this.examService = new ExamService();
         this.responseService = new ResponseService();
-        this.questionMap = examService.getExamWithQuestions("E001");
+//        this.questionMap = examService.getExamWithQuestions("E001");
+this.questionMap = examService.getExamWithQuestions(examId);
         this.questionList = new ArrayList<>(questionMap.keySet());
         this.questionOptionMap = new ConcurrentHashMap<>();
         

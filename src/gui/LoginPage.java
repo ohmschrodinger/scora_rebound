@@ -11,7 +11,7 @@ import javax.swing.border.MatteBorder;
 import java.io.IOException;
 
 public class LoginPage extends JFrame {
-    private JTextField nameField;
+    private JTextField userIdField; // Changed from nameField
     private JPasswordField passwordField;
     private JRadioButton studentRadio;
     private JRadioButton examinerRadio;
@@ -35,7 +35,7 @@ public class LoginPage extends JFrame {
         leftPanel.setBackground(Color.WHITE);
 
         // Sun icon
-        JLabel title = new JLabel("☀️");
+        JLabel title = new JLabel("☀");
         title.setFont(new Font("Segoe UI", Font.PLAIN, 32));
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -49,16 +49,16 @@ public class LoginPage extends JFrame {
         subLabel.setForeground(Color.GRAY);
         subLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Name field with underline style
-        JLabel nameLabel = new JLabel("Name");
-        nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // User ID field with underline style
+        JLabel userIdLabel = new JLabel("User ID");
+        userIdLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        userIdLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        nameField = new JTextField(20);
-        nameField.setBorder(new MatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
-        nameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        nameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        nameField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        userIdField = new JTextField(20);
+        userIdField.setBorder(new MatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+        userIdField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        userIdField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        userIdField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // Password field with underline style
         JLabel passwordLabel = new JLabel("Password");
@@ -110,23 +110,23 @@ public class LoginPage extends JFrame {
         loginButton.setBorderPainted(false);
         loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        JButton signupButton = new JButton("Sign up");
-        signupButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        signupButton.setBackground(new Color(73, 125, 116));
-        
-signupButton.setOpaque(true);
-signupButton.setContentAreaFilled(true);
-        signupButton.setForeground(Color.BLACK);
-        signupButton.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
-        signupButton.setFocusPainted(false);
-        signupButton.setBorderPainted(false);
-        signupButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+//        JButton signupButton = new JButton("Sign up");
+//        signupButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
+//        signupButton.setBackground(new Color(73, 125, 116));
+//        
+//        signupButton.setOpaque(true);
+//        signupButton.setContentAreaFilled(true);
+//        signupButton.setForeground(Color.BLACK);
+//        signupButton.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
+//        signupButton.setFocusPainted(false);
+//        signupButton.setBorderPainted(false);
+//        signupButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         loginButton.addActionListener(e -> loginUser());
-        signupButton.addActionListener(e -> signupUser());
+//        signupButton.addActionListener(e -> signupUser());
 
         buttonPanel.add(loginButton);
-        buttonPanel.add(signupButton);
+//        buttonPanel.add(signupButton);
 
         // Add components to left panel with enough spacing
         leftPanel.add(title);
@@ -135,9 +135,9 @@ signupButton.setContentAreaFilled(true);
         leftPanel.add(Box.createVerticalStrut(5));
         leftPanel.add(subLabel);
         leftPanel.add(Box.createVerticalStrut(30));
-        leftPanel.add(nameLabel);
+        leftPanel.add(userIdLabel);
         leftPanel.add(Box.createVerticalStrut(5));
-        leftPanel.add(nameField);
+        leftPanel.add(userIdField);
         leftPanel.add(Box.createVerticalStrut(25));
         leftPanel.add(passwordLabel);
         leftPanel.add(Box.createVerticalStrut(5));
@@ -149,24 +149,21 @@ signupButton.setContentAreaFilled(true);
         leftPanel.add(Box.createVerticalGlue()); // Push everything up
 
         // Right Panel (Image)
-JPanel rightPanel = new JPanel() {
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        setBackground(new Color(234, 233, 232));
+        JPanel rightPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                setBackground(new Color(234, 233, 232));
 
-        // Load and display image
-        ImageIcon icon = new ImageIcon(getClass().getResource("/gui/Login.png"));
-        Image img = icon.getImage();
-        if (img != null) {
-            g.drawImage(img, getWidth() / 2 - img.getWidth(null) / 2,
-                        getHeight() / 2 - img.getHeight(null) / 2, this);
-        }
-    }
-};
-
-
-
+                // Load and display image
+                ImageIcon icon = new ImageIcon(getClass().getResource("/gui/Login.png"));
+                Image img = icon.getImage();
+                if (img != null) {
+                    g.drawImage(img, getWidth() / 2 - img.getWidth(null) / 2,
+                                getHeight() / 2 - img.getHeight(null) / 2, this);
+                }
+            }
+        };
 
         rightPanel.setPreferredSize(new Dimension(450, 600));
 
@@ -175,59 +172,103 @@ JPanel rightPanel = new JPanel() {
     }
 
     private void loginUser() {
-        String name = nameField.getText().trim();
+        String userId = userIdField.getText().trim();
         String password = new String(passwordField.getPassword());
 
-        if (name.isEmpty() || password.isEmpty()) {
+        if (userId.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill all fields.");
             return;
         }
+        
+        if (!studentRadio.isSelected() && !examinerRadio.isSelected()) {
+            JOptionPane.showMessageDialog(this, "Please select a role (Student or Examiner).");
+            return;
+        }
 
-        User user = authService.login(name, password);
+        User user = authService.login(userId, password);
         if (user != null) {
-            JOptionPane.showMessageDialog(this, "Login successful!");
-            if (studentRadio.isSelected()) {
+            // Check if the user has the selected role
+            boolean isStudent = authService.isStudent(userId);
+            boolean isExaminer = authService.isExaminer(userId);
+            
+            if (studentRadio.isSelected() && isStudent) {
+                JOptionPane.showMessageDialog(this, "Login successful!");
                 new StudentPortal(user.getUserId()).setVisible(true);
-            } else {
+                this.dispose();
+            } else if (examinerRadio.isSelected() && isExaminer) {
+                JOptionPane.showMessageDialog(this, "Login successful!");
                 new ExaminerPortal(user.getUserId()).setVisible(true);
+                this.dispose();
+            } else {
+                // Role mismatch
+                String selectedRole = studentRadio.isSelected() ? "Student" : "Examiner";
+                JOptionPane.showMessageDialog(this, 
+                    "Access denied. You are not registered as a " + selectedRole + ".", 
+                    "Login Failed", 
+                    JOptionPane.ERROR_MESSAGE);
             }
-            this.dispose();
         } else {
             JOptionPane.showMessageDialog(this, "Invalid credentials!", "Login Failed", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     private void signupUser() {
-        String name = nameField.getText().trim();
-        String password = new String(passwordField.getPassword());
+        String name = JOptionPane.showInputDialog(this, "Enter Name:");
+        if (name == null || name.trim().isEmpty()) {
+            return; // User cancelled or entered nothing
+        }
+        
+        String password = JOptionPane.showInputDialog(this, "Enter Password:");
+        if (password == null || password.trim().isEmpty()) {
+            return; // User cancelled or entered nothing
+        }
 
-        if (name.isEmpty() || password.isEmpty() || 
-        (!studentRadio.isSelected() && !examinerRadio.isSelected()) || 
-        name.matches(".*\\d.*")) {
-
-            JOptionPane.showMessageDialog(this, "Please fill all fields, select a role, and make sure the name doesn't contain numbers.");
+        if (!studentRadio.isSelected() && !examinerRadio.isSelected()) {
+            JOptionPane.showMessageDialog(this, "Please select a role (Student or Examiner).");
             return;
         }
-        //ADD NUMBER ERROR HANDLING
+        
+        // Validation check for name containing numbers
+        if (name.matches(".*\\d.*")) {
+            JOptionPane.showMessageDialog(this, "Name should not contain numbers.");
+            return;
+        }
+        
         if (studentRadio.isSelected()) {
             String course = JOptionPane.showInputDialog(this, "Enter Course:");
+            if (course == null || course.trim().isEmpty()) {
+                return; // User cancelled or entered nothing
+            }
+            
             String yearStr = JOptionPane.showInputDialog(this, "Enter Academic Year:");
+            if (yearStr == null || yearStr.trim().isEmpty()) {
+                return; // User cancelled or entered nothing
+            }
+            
             try {
                 int year = Integer.parseInt(yearStr);
                 Student student = new Student(null, name, password, course, year);
                 Student registered = authService.registerStudent(student);
                 if (registered != null) {
                     JOptionPane.showMessageDialog(this, "Student registered! Your ID: " + registered.getUserId());
+                    // Pre-fill the userId field with the new ID
+                    userIdField.setText(registered.getUserId());
                 }
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this, "Academic year must be a number.");
             }
         } else if (examinerRadio.isSelected()) {
             String dept = JOptionPane.showInputDialog(this, "Enter Department:");
+            if (dept == null || dept.trim().isEmpty()) {
+                return; // User cancelled or entered nothing
+            }
+            
             Examiner examiner = new Examiner(null, name, password, dept);
             Examiner registered = authService.registerExaminer(examiner);
             if (registered != null) {
                 JOptionPane.showMessageDialog(this, "Examiner registered! Your ID: " + registered.getUserId());
+                // Pre-fill the userId field with the new ID
+                userIdField.setText(registered.getUserId());
             }
         }
     }
