@@ -322,6 +322,18 @@ try (PreparedStatement ps = conn.prepareStatement(insertContainsSql)) {
     return false;
 }
 
+    public boolean deleteExam(String examId) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement("DELETE FROM Exam WHERE ExamID = ?");
+            ps.setString(1, examId);
+            int rowsAffected = ps.executeUpdate();
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }
 

@@ -1,5 +1,6 @@
 package gui;
 import javax.swing.*;
+import javax.swing.table.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.*;
@@ -203,67 +204,217 @@ public class ExaminerPortal extends JFrame {
     
     private JPanel createExamsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        JLabel titleLabel = new JLabel("Manage Exams");
-        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        panel.add(titleLabel, BorderLayout.NORTH);
-        
-        // Toolbar with buttons
-        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        
+        // Create exam button
         JButton createExamBtn = new JButton("Create New Exam");
         createExamBtn.addActionListener(e -> showCreateExamDialog());
         
-       
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.add(createExamBtn);
+        panel.add(topPanel, BorderLayout.NORTH);
         
-        toolbar.add(createExamBtn);
-       
-        panel.add(toolbar, BorderLayout.CENTER);
-        
-        // Table to display exams
-        String[] columnNames = {"Exam ID", "Subject", "Total Marks", "Duration", "Actions"};
+        // Exams table
+        String[] columnNames = {"Exam ID", "Subject", "Total Marks", "Duration", "Status", "Actions"};
         Object[][] data = getExamsData();
+        JTable examsTable = new JTable(data, columnNames);
         
-        JTable examTable = new JTable(data, columnNames);
-        examTable.setRowHeight(30);
-        examTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        // Add delete button to each row
+        examsTable.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                JButton deleteBtn = new JButton("Delete");
+                deleteBtn.setBackground(new Color(255, 99, 71)); // Tomato color
+                deleteBtn.setForeground(Color.WHITE);
+                deleteBtn.setFocusPainted(false);
+                panel.add(deleteBtn);
+                return panel;
+            }
+        });
         
-        JScrollPane scrollPane = new JScrollPane(examTable);
-        panel.add(scrollPane, BorderLayout.SOUTH);
+        examsTable.getColumnModel().getColumn(5).setCellEditor(new DefaultCellEditor(new JTextField()) {
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                JButton deleteBtn = new JButton("Delete");
+                deleteBtn.setBackground(new Color(255, 99, 71));
+                deleteBtn.setForeground(Color.WHITE);
+                deleteBtn.setFocusPainted(false);
+                
+                deleteBtn.addActionListener(e -> {
+                    String examId = (String) table.getValueAt(row, 0);
+                    int confirm = JOptionPane.showConfirmDialog(
+                        panel,
+                        "Are you sure you want to delete this exam?",
+                        "Confirm Delete",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                    );
+                    
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        try {
+                            ExamService examService = new ExamService();
+                            boolean success = examService.deleteExam(examId);
+                            
+                            if (success) {
+                                JOptionPane.showMessageDialog(
+                                    panel,
+                                    "Exam deleted successfully!",
+                                    "Success",
+                                    JOptionPane.INFORMATION_MESSAGE
+                                );
+                                
+                                // Refresh the exams panel
+                                cardPanel.remove(cardPanel.getComponentCount() - 1);
+                                JPanel newExamsPanel = createExamsPanel();
+                                cardPanel.add(newExamsPanel, "exams");
+                                cardLayout.show(cardPanel, "exams");
+                            } else {
+                                JOptionPane.showMessageDialog(
+                                    panel,
+                                    "Failed to delete exam!",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                                );
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            JOptionPane.showMessageDialog(
+                                panel,
+                                "An error occurred while deleting the exam.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                    }
+                });
+                
+                panel.add(deleteBtn);
+                return panel;
+            }
+        });
+        
+        JScrollPane scrollPane = new JScrollPane(examsTable);
+        panel.add(scrollPane, BorderLayout.CENTER);
         
         return panel;
     }
     
-private Object[][] getExamsData() {
-    try {
-        Connection conn = DBConnection.getConnection();
-        PreparedStatement ps = conn.prepareStatement(
-            "SELECT ExamID, Subject, TotalMarks, Duration, Status FROM Exam WHERE UserID = ?");
-        ps.setString(1, userId);
-        ResultSet rs = ps.executeQuery();
-
-        // Use a dynamic list to collect rows
-        java.util.List<Object[]> rows = new java.util.ArrayList<>();
-
-        while (rs.next()) {
-            Object[] row = new Object[6];
-            row[0] = rs.getString("ExamID");
-            row[1] = rs.getString("Subject");
-            row[2] = rs.getString("TotalMarks");
-            row[3] = rs.getString("Duration");
-            String ex= rs.getString("Status");
-            row[4] = "done";
-            rows.add(row);
-        }
-
-        return rows.toArray(new Object[0][0]);
-    } catch (Exception e) {
-        e.printStackTrace();
-        return new Object[0][0];
+    private void refreshExamsPanel() {
+        JPanel newExamsPanel = createExamsPanel();
+        cardPanel.remove(cardPanel.getComponentCount() - 1); // Remove the last panel (exams panel)
+        cardPanel.add(newExamsPanel, "exams");
+        cardLayout.show(cardPanel, "exams");
     }
-}
+    
+    private void showCreateExamDialog() {
+        JDialog dialog = new JDialog(this, "Create New Exam", true);
+        dialog.setSize(500, 400);
+        dialog.setLocationRelativeTo(this);
+        
+        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        
+        JLabel subjectLabel = new JLabel("Subject:");
+        JTextField subjectField = new JTextField();
+        
+        JLabel marksLabel = new JLabel("Total Marks:");
+        JTextField marksField = new JTextField();
+        
+        JLabel durationLabel = new JLabel("Duration (mins):");
+        JTextField durationField = new JTextField();
+        
+        JButton createBtn = new JButton("Create");
+        createBtn.addActionListener(e -> {
+            String subject = subjectField.getText().trim();
+            String marksText = marksField.getText().trim();
+            String durationText = durationField.getText().trim();
 
+            if (subject.isEmpty() || marksText.isEmpty() || durationText.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Please fill all fields!", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            try {
+                int totalMarks = Integer.parseInt(marksText);
+                int duration = Integer.parseInt(durationText);
+                
+                Exam exam = new Exam(
+                    "TEMP",
+                    totalMarks,
+                    duration + " mins",
+                    subject,
+                    "Scheduled",
+                    userId
+                );
+
+                ExamService examService = new ExamService();
+                boolean success = examService.createExam(exam);
+
+                if (success) {
+                    JOptionPane.showMessageDialog(dialog, "Exam created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    dialog.dispose();
+                    
+                    // Remove the old exams panel
+                    cardPanel.remove(cardPanel.getComponentCount() - 1);
+                    // Create and add the new exams panel
+                    JPanel newExamsPanel = createExamsPanel();
+                    cardPanel.add(newExamsPanel, "exams");
+                    // Show the exams panel
+                    cardLayout.show(cardPanel, "exams");
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Failed to create exam!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(dialog, "Enter valid numeric values for marks and duration.", "Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(dialog, "An error occurred while creating the exam.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        panel.add(subjectLabel);
+        panel.add(subjectField);
+        panel.add(marksLabel);
+        panel.add(marksField);
+        panel.add(durationLabel);
+        panel.add(durationField);
+        panel.add(new JLabel());
+        panel.add(createBtn);
+        
+        dialog.add(panel);
+        dialog.setVisible(true);
+    }
+    
+    private Object[][] getExamsData() {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(
+                "SELECT ExamID, Subject, TotalMarks, Duration, Status FROM Exam WHERE UserID = ?");
+            ps.setString(1, userId);
+            ResultSet rs = ps.executeQuery();
+
+            // Use a dynamic list to collect rows
+            java.util.List<Object[]> rows = new java.util.ArrayList<>();
+
+            while (rs.next()) {
+                Object[] row = new Object[6];
+                row[0] = rs.getString("ExamID");
+                row[1] = rs.getString("Subject");
+                row[2] = rs.getString("TotalMarks");
+                row[3] = rs.getString("Duration");
+                String ex= rs.getString("Status");
+                row[4] = "done";
+                rows.add(row);
+            }
+
+            return rows.toArray(new Object[0][0]);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new Object[0][0];
+        }
+    }
     
     private JPanel createQuestionsPanel() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -391,82 +542,6 @@ private Object[][] getExamsData() {
         }
     }
     
-    private void showCreateExamDialog() {
-        JDialog dialog = new JDialog(this, "Create New Exam", true);
-        dialog.setSize(500, 400);
-        dialog.setLocationRelativeTo(this);
-        
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        
-        JLabel subjectLabel = new JLabel("Subject:");
-        JTextField subjectField = new JTextField();
-        
-        JLabel marksLabel = new JLabel("Total Marks:");
-        JTextField marksField = new JTextField();
-        
-        JLabel durationLabel = new JLabel("Duration (mins):");
-        JTextField durationField = new JTextField();
-        
-        JButton createBtn = new JButton("Create");
-        createBtn.addActionListener(e -> {
-    String subject = subjectField.getText().trim();
-    String marksText = marksField.getText().trim();
-    String durationText = durationField.getText().trim();
-
-    if (subject.isEmpty() || marksText.isEmpty() || durationText.isEmpty()) {
-        JOptionPane.showMessageDialog(dialog, "Please fill all fields!", "Error", JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-
-    try {
-        int totalMarks = Integer.parseInt(marksText);
-        int duration = Integer.parseInt(durationText);
-        
-        // Create exam using your required constructor
-        Exam exam = new Exam(
-            "TEMP",                            // temporary dummy ExamID
-            totalMarks,
-            duration + " mins",               // assuming duration column is varchar
-            subject,
-            "Scheduled",                      // or any default status you prefer
-            userId
-        );
-
-        ExamService examService = new ExamService();
-        boolean success = examService.createExam(exam);
-
-        if (success) {
-            JOptionPane.showMessageDialog(dialog, "Exam created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-            dialog.dispose();
-            // Optional: refresh exam list/table here
-        } else {
-            JOptionPane.showMessageDialog(dialog, "Failed to create exam!", "Error", JOptionPane.ERROR_MESSAGE);
-        }
-
-    } catch (NumberFormatException ex) {
-        JOptionPane.showMessageDialog(dialog, "Enter valid numeric values for marks and duration.", "Error", JOptionPane.ERROR_MESSAGE);
-    } catch (Exception ex) {
-        ex.printStackTrace();
-        JOptionPane.showMessageDialog(dialog, "Error creating exam: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-    }
-});
-
-
-
-        
-        panel.add(subjectLabel);
-        panel.add(subjectField);
-        panel.add(marksLabel);
-        panel.add(marksField);
-        panel.add(durationLabel);
-        panel.add(durationField);
-        panel.add(new JLabel());
-        panel.add(createBtn);
-        
-        dialog.add(panel);
-        dialog.setVisible(true);
-    }
     private void showAddQuestionDialog() {
     ExamService examService = new ExamService();
     JDialog dialog = new JDialog(this, "Add New Question", true);
