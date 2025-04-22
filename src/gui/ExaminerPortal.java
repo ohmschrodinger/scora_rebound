@@ -6,6 +6,13 @@ import java.sql.*;
 import db.DBConnection;
 import model.User;
 import services.ExamService;
+import model.Exam;
+import model.Question;
+import model.Option;
+import java.util.List;
+import java.util.ArrayList;
+
+
 
 public class ExaminerPortal extends JFrame {
     private String userId;
@@ -16,7 +23,7 @@ public class ExaminerPortal extends JFrame {
     public ExaminerPortal(String userId) {
         this.userId = userId;
         initializeUI();
-        loadExaminerData();
+//        loadExaminerData();
     }
     
     private void initializeUI() {
@@ -110,7 +117,10 @@ public class ExaminerPortal extends JFrame {
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
         button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         button.setBackground(new Color(73, 125, 116));
-        button.setForeground(Color.WHITE);
+         button.setOpaque(true);
+        button.setContentAreaFilled(true);
+
+        button.setForeground(Color.BLACK);
         button.setFocusPainted(false);
         button.addActionListener(e -> cardLayout.show(cardPanel, cardName));
         return button;
@@ -205,15 +215,14 @@ public class ExaminerPortal extends JFrame {
         JButton createExamBtn = new JButton("Create New Exam");
         createExamBtn.addActionListener(e -> showCreateExamDialog());
         
-        JButton editExamBtn = new JButton("Edit Exam");
-        editExamBtn.addActionListener(e -> showEditExamDialog());
+       
         
         toolbar.add(createExamBtn);
-        toolbar.add(editExamBtn);
+       
         panel.add(toolbar, BorderLayout.CENTER);
         
         // Table to display exams
-        String[] columnNames = {"Exam ID", "Subject", "Total Marks", "Duration", "Status", "Actions"};
+        String[] columnNames = {"Exam ID", "Subject", "Total Marks", "Duration", "Actions"};
         Object[][] data = getExamsData();
         
         JTable examTable = new JTable(data, columnNames);
@@ -243,8 +252,8 @@ private Object[][] getExamsData() {
             row[1] = rs.getString("Subject");
             row[2] = rs.getString("TotalMarks");
             row[3] = rs.getString("Duration");
-            row[4] = rs.getString("Status");
-            row[5] = "Edit | Delete";
+            String ex= rs.getString("Status");
+            row[4] = "done";
             rows.add(row);
         }
 
@@ -293,7 +302,8 @@ private Object[][] getExamsData() {
             PreparedStatement ps = conn.prepareStatement(
                 "SELECT q.QuestionID, q.Category, q.Level, q.Text, q.Marks " +
                 "FROM question q JOIN manages m ON q.QuestionID = m.QuestionID " +
-                "WHERE m.UserID = ?");
+                "WHERE m.UserID = ?",   ResultSet.TYPE_SCROLL_INSENSITIVE,
+    ResultSet.CONCUR_READ_ONLY);
             ps.setString(1, userId);
             ResultSet rs = ps.executeQuery();
             
@@ -352,7 +362,8 @@ private Object[][] getExamsData() {
                           "JOIN user u ON r.UserID = u.userID " +
                           "JOIN PerformanceReport pr ON r.ResultID = pr.ResultID " +
                           "WHERE e.UserID = ?";
-            PreparedStatement ps = conn.prepareStatement(query);
+            PreparedStatement ps = conn.prepareStatement(query,  ResultSet.TYPE_SCROLL_INSENSITIVE,
+    ResultSet.CONCUR_READ_ONLY);
             ps.setString(1, userId);
             ResultSet rs = ps.executeQuery();
             
@@ -398,9 +409,7 @@ private Object[][] getExamsData() {
         JTextField durationField = new JTextField();
         
         JButton createBtn = new JButton("Create");
-        
-        
-createBtn.addActionListener(e -> {
+        createBtn.addActionListener(e -> {
     String subject = subjectField.getText().trim();
     String marksText = marksField.getText().trim();
     String durationText = durationField.getText().trim();
@@ -413,19 +422,27 @@ createBtn.addActionListener(e -> {
     try {
         int totalMarks = Integer.parseInt(marksText);
         int duration = Integer.parseInt(durationText);
+        
+        // Create exam using your required constructor
+        Exam exam = new Exam(
+            "TEMP",                            // temporary dummy ExamID
+            totalMarks,
+            duration + " mins",               // assuming duration column is varchar
+            subject,
+            "Scheduled",                      // or any default status you prefer
+            userId
+        );
 
-        Connection conn = DBConnection.getConnection();
-        CallableStatement cs = conn.prepareCall("{call CREATE_EXAM_PROCEDURE(?, ?, ?, ?)}");
-        cs.setString(1, userId);
-        cs.setString(2, subject);
-        cs.setInt(3, totalMarks);
-        cs.setInt(4, duration);
+        ExamService examService = new ExamService();
+        boolean success = examService.createExam(exam);
 
-        cs.execute();
-        JOptionPane.showMessageDialog(dialog, "Exam created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
-
-        dialog.dispose();
-        // Optional: refresh exam table here if needed
+        if (success) {
+            JOptionPane.showMessageDialog(dialog, "Exam created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            dialog.dispose();
+            // Optional: refresh exam list/table here
+        } else {
+            JOptionPane.showMessageDialog(dialog, "Failed to create exam!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
 
     } catch (NumberFormatException ex) {
         JOptionPane.showMessageDialog(dialog, "Enter valid numeric values for marks and duration.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -434,6 +451,8 @@ createBtn.addActionListener(e -> {
         JOptionPane.showMessageDialog(dialog, "Error creating exam: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
 });
+
+
 
         
         panel.add(subjectLabel);
@@ -448,23 +467,187 @@ createBtn.addActionListener(e -> {
         dialog.add(panel);
         dialog.setVisible(true);
     }
-    
     private void showAddQuestionDialog() {
-        JDialog dialog = new JDialog(this, "Add New Question", true);
-        dialog.setSize(600, 500);
-        dialog.setLocationRelativeTo(this);
+    ExamService examService = new ExamService();
+    JDialog dialog = new JDialog(this, "Add New Question", true);
+    dialog.setSize(700, 700);
+    dialog.setLocationRelativeTo(this);
+    
+    // Main container with border layout
+    JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
+    mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    
+    // North panel for header
+    JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+    JLabel headerLabel = new JLabel("Add New Question");
+    headerLabel.setFont(new Font("Arial", Font.BOLD, 18));
+    headerPanel.add(headerLabel);
+    
+    // Center panel with form fields
+    JPanel formPanel = new JPanel();
+    formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+    
+    // Basic information section
+    JPanel basicInfoPanel = new JPanel(new GridLayout(3, 4, 10, 10));
+    basicInfoPanel.setBorder(BorderFactory.createTitledBorder(
+        BorderFactory.createEtchedBorder(), "Basic Information"));
+    
+    basicInfoPanel.add(new JLabel("Exam ID:"));
+    JTextField examIdField = new JTextField();
+    basicInfoPanel.add(examIdField);
+    
+    basicInfoPanel.add(new JLabel("Category:"));
+    JTextField categoryField = new JTextField();
+    basicInfoPanel.add(categoryField);
+    
+    basicInfoPanel.add(new JLabel("Level:"));
+    JTextField levelField = new JTextField();
+    basicInfoPanel.add(levelField);
+    
+    basicInfoPanel.add(new JLabel("Marks:"));
+    JTextField marksField = new JTextField();
+    basicInfoPanel.add(marksField);
+    
+    // Question content section
+    JPanel questionPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+    questionPanel.setBorder(BorderFactory.createTitledBorder(
+        BorderFactory.createEtchedBorder(), "Question Content"));
+    
+    questionPanel.add(new JLabel("MCQ:"));
+    JTextField mcqField = new JTextField();
+    questionPanel.add(mcqField);
+    
+    questionPanel.add(new JLabel("FIB:"));
+    JTextField fibField = new JTextField();
+    questionPanel.add(fibField);
+    
+    questionPanel.add(new JLabel("Question Text:"));
+    JTextField textField = new JTextField();
+    questionPanel.add(textField);
+    
+    // Options section 
+    JPanel optionsPanel = new JPanel(new GridLayout(4, 1, 10, 10));
+    optionsPanel.setBorder(BorderFactory.createTitledBorder(
+        BorderFactory.createEtchedBorder(), "Answer Options"));
+    
+    JTextField[] optionFields = new JTextField[4];
+    JRadioButton[] correctButtons = new JRadioButton[4];
+    ButtonGroup group = new ButtonGroup();
+    
+    for (int i = 0; i < 4; i++) {
+        JPanel optRow = new JPanel(new BorderLayout(10, 0));
+        JLabel optLabel = new JLabel("Option " + (i + 1) + ":");
+        optLabel.setPreferredSize(new Dimension(80, 25));
         
-        // Similar implementation as create exam dialog
-        // Would include fields for question text, options, correct answer, etc.
+        optionFields[i] = new JTextField();
+        correctButtons[i] = new JRadioButton("Correct");
+        correctButtons[i].setBackground(Color.WHITE);
+        group.add(correctButtons[i]);
         
-        dialog.setVisible(true);
+        JPanel innerPanel = new JPanel(new BorderLayout());
+        innerPanel.add(optionFields[i], BorderLayout.CENTER);
+        innerPanel.add(correctButtons[i], BorderLayout.EAST);
+        
+        optRow.add(optLabel, BorderLayout.WEST);
+        optRow.add(innerPanel, BorderLayout.CENTER);
+        optionsPanel.add(optRow);
     }
     
-    private void loadExaminerData() {
-        // Additional initialization if needed
-    }
+    // Add panels to form
+    formPanel.add(basicInfoPanel);
+    formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+    formPanel.add(questionPanel);
+    formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+    formPanel.add(optionsPanel);
     
-    private void showEditExamDialog() {
-        // Implementation for editing an exam
+    // South panel for buttons
+    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    JButton cancelButton = new JButton("Cancel");
+    cancelButton.addActionListener(e -> dialog.dispose());
+    
+    JButton addButton = new JButton("Add Question");
+    addButton.setBackground(new Color(34, 139, 34)); // Forest green
+    addButton.setForeground(Color.WHITE);
+    addButton.setFont(new Font("Arial", Font.BOLD, 14));
+    
+    addButton.addActionListener(e -> {
+        try {
+            String examId = examIdField.getText().trim();
+            String category = categoryField.getText().trim();
+            String level = levelField.getText().trim();
+            String mcq = mcqField.getText().trim();
+            String fib = fibField.getText().trim();
+            String text = textField.getText().trim();
+            int marks = Integer.parseInt(marksField.getText().trim());
+            
+            if (examId.isEmpty() || category.isEmpty() || level.isEmpty() || text.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Please fill all required fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Exam ID validity check
+            if (!examService.examExists(examId)) {
+                JOptionPane.showMessageDialog(dialog, "Invalid Exam ID. Please check again.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+String tempQuestionId = "TEMP";  // Temporary ID for now
+Question question = new Question(tempQuestionId, category, level, mcq, fib, text, marks);
+
+List<Option> options = new ArrayList<>();
+boolean correctSelected = false;
+
+for (int i = 0; i < 4; i++) {
+    String optionText = optionFields[i].getText().trim();
+    if (optionText.isEmpty()) {
+        JOptionPane.showMessageDialog(dialog, "All options must be filled.", "Error", JOptionPane.ERROR_MESSAGE);
+        return;
     }
+    char isCorrect = correctButtons[i].isSelected() ? 'Y' : 'N';
+    if (isCorrect == 'Y') correctSelected = true;
+
+    // TEMP OptionID; QuestionID will be replaced in backend anyway
+    Option option = new Option("TEMP_O" + (i + 1), optionText, isCorrect, tempQuestionId);
+    options.add(option);
+}
+
+            
+            if (!correctSelected) {
+                JOptionPane.showMessageDialog(dialog, "Please select one correct option.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            boolean success = examService.addQuestionAndOptions(examId, question, options,userId);
+            
+            if (success) {
+                JOptionPane.showMessageDialog(dialog, "Question added successfully.");
+                dialog.dispose();
+            } else {
+                JOptionPane.showMessageDialog(dialog, "Failed to add question.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(dialog, "Invalid input! Make sure all fields are filled properly.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    });
+    
+    buttonPanel.add(cancelButton);
+    buttonPanel.add(addButton);
+    
+    // Add all components to main panel
+    mainPanel.add(headerPanel, BorderLayout.NORTH);
+    mainPanel.add(new JScrollPane(formPanel), BorderLayout.CENTER);
+    mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+    
+    dialog.add(mainPanel);
+    dialog.setVisible(true);
+}
+
+    
+//    private void loadExaminerData() {
+//        // Additional initialization if needed
+//    }
+//    
+    
 }

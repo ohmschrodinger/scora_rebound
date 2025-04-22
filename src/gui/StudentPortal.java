@@ -29,6 +29,8 @@ public class StudentPortal extends JFrame {
         this.userId = userId;
         initializeUI();
         loadStudentData();
+        
+        setVisible(true);
     }
 
     /**
@@ -316,15 +318,15 @@ private JPanel createPastResultsPanel() {
      *
      * @return 2D array of result data to display in table
      */
-   private Object[][] getPastResultsData() {
+ private Object[][] getPastResultsData() {
     try {
-        // Modified query to only select needed columns
         Connection conn = DBConnection.getConnection();
-        String query = "SELECT e.ExamID, e.Subject "
-                + "FROM Result r "
-                + "JOIN Exam e ON r.ExamID = e.ExamID "
-                + "WHERE r.UserID = ?";
-        PreparedStatement ps = conn.prepareStatement(query);
+        String query = "SELECT a.ExamID, e.Subject " +
+                       "FROM Attempt a " +
+                       "JOIN Exam e ON a.ExamID = e.ExamID " +
+                       "WHERE a.UserID = ?";
+        PreparedStatement ps = conn.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE,
+                                                     ResultSet.CONCUR_READ_ONLY);
         ps.setString(1, userId);
         ResultSet rs = ps.executeQuery();
 
@@ -333,12 +335,12 @@ private JPanel createPastResultsPanel() {
         int rowCount = rs.getRow();
         rs.beforeFirst();
 
-        Object[][] data = new Object[rowCount][3]; // Changed to 3 columns
+        Object[][] data = new Object[rowCount][3]; // 3 columns: ExamID, Subject, Button
         int i = 0;
         while (rs.next()) {
             data[i][0] = rs.getString("ExamID");
             data[i][1] = rs.getString("Subject");
-            data[i][2] = "View Result"; // This will be our button text
+            data[i][2] = "View Result"; // Button text, result page will handle generation
             i++;
         }
 
@@ -353,6 +355,8 @@ private JPanel createPastResultsPanel() {
         return new Object[0][0];
     }
 }
+
+
     /**
      * Creates the panel showing user profile information
      *
@@ -413,13 +417,11 @@ class ResultButtonEditor extends DefaultCellEditor {
             // Get the exam ID from the correct row index
             String examId = table.getValueAt(row, 0).toString();
             
-            // For now, just show a message dialog
-            JOptionPane.showMessageDialog(parent, 
-                "View Result clicked for Exam ID: " + examId + "\n" +
-                "This will later redirect to ResultPage.java",
-                "Result View", JOptionPane.INFORMATION_MESSAGE);
-            
-            // Later we would add: new ResultPage(parent.getUserId(), examId).setVisible(true);
+            // Actually create and display the ResultPage instead of just showing a message
+            SwingUtilities.invokeLater(() -> {
+                new ResultPage(parent.getUserId(), examId).setVisible(true);
+                parent.dispose(); // Close the student portal
+            });
         }
         isPushed = false;
         return label;
@@ -519,7 +521,8 @@ class ResultButtonEditor extends DefaultCellEditor {
         public ButtonRenderer() {
             setOpaque(true);
             setBackground(new Color(73, 125, 116));
-            setForeground(Color.WHITE);
+            setForeground(Color.BLACK);
+             setContentAreaFilled(true);
         }
         
         /**

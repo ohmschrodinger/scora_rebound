@@ -5,9 +5,9 @@ import java.sql.*;
 public class DBConnection {
 
     public static Connection getConnection() throws ClassNotFoundException, SQLException {
-        String url = "jdbc:mysql://localhost:3306/onlineexaminationsystem";
+        String url = "jdbc:mysql://localhost:3306/EXAMINATION_SYSTEM";
         String user = "root";
-        String pass = "localhost";
+        String pass = "9936360068";
 
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection conn = DriverManager.getConnection(url, user, pass);

@@ -29,12 +29,12 @@ public class Option {
     public String getOptionId(){ return this.optionId;  }
     public String getText(){ return this.text;  }
     public String getQuestionId(){ return this.questionId;  }
-    public char is_correct() { return this.is_correct; }
+    public char getIsCorrect() { return this.is_correct; }
     
     //setter method
-    public void getOptionId(String optionId){ this.optionId=optionId;  }
+    public void setOptionId(String optionId){ this.optionId=optionId;  }
     public void setText(String text){  this.text=text;  }
-    public void getQuestionId(String questionId ){ this.questionId=questionId;  }
-    public void is_correct(char is_correct) { this.is_correct=is_correct; }
+    public void setQuestionId(String questionId ){ this.questionId=questionId;  }
+    public void   setIsCorrect(char is_correct) { this.is_correct=is_correct; }
     
 }

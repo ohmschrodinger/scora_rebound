@@ -1,6 +1,6 @@
-package views;
+package gui;
 
-
+import gui.StudentPortal;
 import model.Result;
 import model.PerformanceReport;
 import services.ResultDAO;
@@ -177,9 +177,8 @@ public class ResultPage extends JFrame {
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dispose(); // Close this window
-                // Uncomment this when you have StudentPortal class ready
-                // new StudentPortal(userId); // Open Student Portal page
+                dispose(); 
+                 new StudentPortal(userId); 
             }
         });
         

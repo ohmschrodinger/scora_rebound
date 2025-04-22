@@ -40,7 +40,7 @@ public class Exam {
     public void setSubject(String subject) { this.subject = subject; }
     public void setTotalMarks(int totalMarks) { this.totalMarks = totalMarks; }
     public void setExaminerID(String examinerID) { this.userID = userID; }
-     public void getDuration(String duration) { this.duration=duration; }
-    public void status(String status) { this.status=status; }
+     public void setDuration(String duration) { this.duration=duration; }
+    public void setStatus(String status) { this.status=status; }
     public void setUserID(String userID) { this.userID = userID; }
 }
