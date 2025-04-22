@@ -268,6 +268,13 @@ public class ExaminerPortal extends JFrame {
                                 cardPanel.remove(cardPanel.getComponentCount() - 1);
                                 JPanel newExamsPanel = createExamsPanel();
                                 cardPanel.add(newExamsPanel, "exams");
+                                
+                                // Refresh the dashboard panel
+                                cardPanel.remove(0); // Remove the dashboard panel
+                                JPanel newDashboardPanel = createDashboardPanel();
+                                cardPanel.add(newDashboardPanel, "dashboard", 0);
+                                
+                                // Show the exams panel
                                 cardLayout.show(cardPanel, "exams");
                             } else {
                                 JOptionPane.showMessageDialog(
@@ -355,11 +362,16 @@ public class ExaminerPortal extends JFrame {
                     JOptionPane.showMessageDialog(dialog, "Exam created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                     dialog.dispose();
                     
-                    // Remove the old exams panel
+                    // Refresh the exams panel
                     cardPanel.remove(cardPanel.getComponentCount() - 1);
-                    // Create and add the new exams panel
                     JPanel newExamsPanel = createExamsPanel();
                     cardPanel.add(newExamsPanel, "exams");
+                    
+                    // Refresh the dashboard panel
+                    cardPanel.remove(0); // Remove the dashboard panel
+                    JPanel newDashboardPanel = createDashboardPanel();
+                    cardPanel.add(newDashboardPanel, "dashboard", 0);
+                    
                     // Show the exams panel
                     cardLayout.show(cardPanel, "exams");
                 } else {
@@ -440,6 +452,89 @@ public class ExaminerPortal extends JFrame {
         JTable questionTable = new JTable(data, columnNames);
         questionTable.setRowHeight(30);
         questionTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        
+        // Add delete button to each row
+        questionTable.getColumnModel().getColumn(5).setCellRenderer(new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                JButton deleteBtn = new JButton("Delete");
+                deleteBtn.setBackground(new Color(255, 99, 71)); // Tomato color
+                deleteBtn.setForeground(Color.WHITE);
+                deleteBtn.setFocusPainted(false);
+                panel.add(deleteBtn);
+                return panel;
+            }
+        });
+        
+        questionTable.getColumnModel().getColumn(5).setCellEditor(new DefaultCellEditor(new JTextField()) {
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+                JButton deleteBtn = new JButton("Delete");
+                deleteBtn.setBackground(new Color(255, 99, 71));
+                deleteBtn.setForeground(Color.WHITE);
+                deleteBtn.setFocusPainted(false);
+                
+                deleteBtn.addActionListener(e -> {
+                    String questionId = (String) table.getValueAt(row, 0);
+                    int confirm = JOptionPane.showConfirmDialog(
+                        panel,
+                        "Are you sure you want to delete this question?",
+                        "Confirm Delete",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.WARNING_MESSAGE
+                    );
+                    
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        try {
+                            ExamService examService = new ExamService();
+                            boolean success = examService.deleteQuestion(questionId);
+                            
+                            if (success) {
+                                JOptionPane.showMessageDialog(
+                                    panel,
+                                    "Question deleted successfully!",
+                                    "Success",
+                                    JOptionPane.INFORMATION_MESSAGE
+                                );
+                                
+                                // Refresh the questions panel
+                                cardPanel.remove(cardPanel.getComponentCount() - 1);
+                                JPanel newQuestionsPanel = createQuestionsPanel();
+                                cardPanel.add(newQuestionsPanel, "questions");
+                                
+                                // Refresh the dashboard panel
+                                cardPanel.remove(0); // Remove the dashboard panel
+                                JPanel newDashboardPanel = createDashboardPanel();
+                                cardPanel.add(newDashboardPanel, "dashboard", 0);
+                                
+                                // Show the questions panel
+                                cardLayout.show(cardPanel, "questions");
+                            } else {
+                                JOptionPane.showMessageDialog(
+                                    panel,
+                                    "Failed to delete question!",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE
+                                );
+                            }
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                            JOptionPane.showMessageDialog(
+                                panel,
+                                "An error occurred while deleting the question.",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                    }
+                });
+                
+                panel.add(deleteBtn);
+                return panel;
+            }
+        });
         
         JScrollPane scrollPane = new JScrollPane(questionTable);
         panel.add(scrollPane, BorderLayout.SOUTH);
@@ -543,182 +638,191 @@ public class ExaminerPortal extends JFrame {
     }
     
     private void showAddQuestionDialog() {
-    ExamService examService = new ExamService();
-    JDialog dialog = new JDialog(this, "Add New Question", true);
-    dialog.setSize(700, 700);
-    dialog.setLocationRelativeTo(this);
-    
-    // Main container with border layout
-    JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
-    mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-    
-    // North panel for header
-    JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-    JLabel headerLabel = new JLabel("Add New Question");
-    headerLabel.setFont(new Font("Arial", Font.BOLD, 18));
-    headerPanel.add(headerLabel);
-    
-    // Center panel with form fields
-    JPanel formPanel = new JPanel();
-    formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
-    
-    // Basic information section
-    JPanel basicInfoPanel = new JPanel(new GridLayout(3, 4, 10, 10));
-    basicInfoPanel.setBorder(BorderFactory.createTitledBorder(
-        BorderFactory.createEtchedBorder(), "Basic Information"));
-    
-    basicInfoPanel.add(new JLabel("Exam ID:"));
-    JTextField examIdField = new JTextField();
-    basicInfoPanel.add(examIdField);
-    
-    basicInfoPanel.add(new JLabel("Category:"));
-    JTextField categoryField = new JTextField();
-    basicInfoPanel.add(categoryField);
-    
-    basicInfoPanel.add(new JLabel("Level:"));
-    JTextField levelField = new JTextField();
-    basicInfoPanel.add(levelField);
-    
-    basicInfoPanel.add(new JLabel("Marks:"));
-    JTextField marksField = new JTextField();
-    basicInfoPanel.add(marksField);
-    
-    // Question content section
-    JPanel questionPanel = new JPanel(new GridLayout(3, 2, 10, 10));
-    questionPanel.setBorder(BorderFactory.createTitledBorder(
-        BorderFactory.createEtchedBorder(), "Question Content"));
-    
-    questionPanel.add(new JLabel("MCQ:"));
-    JTextField mcqField = new JTextField();
-    questionPanel.add(mcqField);
-    
-    questionPanel.add(new JLabel("FIB:"));
-    JTextField fibField = new JTextField();
-    questionPanel.add(fibField);
-    
-    questionPanel.add(new JLabel("Question Text:"));
-    JTextField textField = new JTextField();
-    questionPanel.add(textField);
-    
-    // Options section 
-    JPanel optionsPanel = new JPanel(new GridLayout(4, 1, 10, 10));
-    optionsPanel.setBorder(BorderFactory.createTitledBorder(
-        BorderFactory.createEtchedBorder(), "Answer Options"));
-    
-    JTextField[] optionFields = new JTextField[4];
-    JRadioButton[] correctButtons = new JRadioButton[4];
-    ButtonGroup group = new ButtonGroup();
-    
-    for (int i = 0; i < 4; i++) {
-        JPanel optRow = new JPanel(new BorderLayout(10, 0));
-        JLabel optLabel = new JLabel("Option " + (i + 1) + ":");
-        optLabel.setPreferredSize(new Dimension(80, 25));
+        ExamService examService = new ExamService();
+        JDialog dialog = new JDialog(this, "Add New Question", true);
+        dialog.setSize(700, 700);
+        dialog.setLocationRelativeTo(this);
         
-        optionFields[i] = new JTextField();
-        correctButtons[i] = new JRadioButton("Correct");
-        correctButtons[i].setBackground(Color.WHITE);
-        group.add(correctButtons[i]);
+        // Main container with border layout
+        JPanel mainPanel = new JPanel(new BorderLayout(15, 15));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
-        JPanel innerPanel = new JPanel(new BorderLayout());
-        innerPanel.add(optionFields[i], BorderLayout.CENTER);
-        innerPanel.add(correctButtons[i], BorderLayout.EAST);
+        // North panel for header
+        JPanel headerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JLabel headerLabel = new JLabel("Add New Question");
+        headerLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        headerPanel.add(headerLabel);
         
-        optRow.add(optLabel, BorderLayout.WEST);
-        optRow.add(innerPanel, BorderLayout.CENTER);
-        optionsPanel.add(optRow);
-    }
-    
-    // Add panels to form
-    formPanel.add(basicInfoPanel);
-    formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-    formPanel.add(questionPanel);
-    formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
-    formPanel.add(optionsPanel);
-    
-    // South panel for buttons
-    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    JButton cancelButton = new JButton("Cancel");
-    cancelButton.addActionListener(e -> dialog.dispose());
-    
-    JButton addButton = new JButton("Add Question");
-    addButton.setBackground(new Color(34, 139, 34)); // Forest green
-    addButton.setForeground(Color.WHITE);
-    addButton.setFont(new Font("Arial", Font.BOLD, 14));
-    
-    addButton.addActionListener(e -> {
-        try {
-            String examId = examIdField.getText().trim();
-            String category = categoryField.getText().trim();
-            String level = levelField.getText().trim();
-            String mcq = mcqField.getText().trim();
-            String fib = fibField.getText().trim();
-            String text = textField.getText().trim();
-            int marks = Integer.parseInt(marksField.getText().trim());
+        // Center panel with form fields
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new BoxLayout(formPanel, BoxLayout.Y_AXIS));
+        
+        // Basic information section
+        JPanel basicInfoPanel = new JPanel(new GridLayout(3, 4, 10, 10));
+        basicInfoPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createEtchedBorder(), "Basic Information"));
+        
+        basicInfoPanel.add(new JLabel("Exam ID:"));
+        JTextField examIdField = new JTextField();
+        basicInfoPanel.add(examIdField);
+        
+        basicInfoPanel.add(new JLabel("Category:"));
+        JTextField categoryField = new JTextField();
+        basicInfoPanel.add(categoryField);
+        
+        basicInfoPanel.add(new JLabel("Level:"));
+        JTextField levelField = new JTextField();
+        basicInfoPanel.add(levelField);
+        
+        basicInfoPanel.add(new JLabel("Marks:"));
+        JTextField marksField = new JTextField();
+        basicInfoPanel.add(marksField);
+        
+        // Question content section
+        JPanel questionPanel = new JPanel(new GridLayout(3, 2, 10, 10));
+        questionPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createEtchedBorder(), "Question Content"));
+        
+        questionPanel.add(new JLabel("MCQ:"));
+        JTextField mcqField = new JTextField();
+        questionPanel.add(mcqField);
+        
+        questionPanel.add(new JLabel("FIB:"));
+        JTextField fibField = new JTextField();
+        questionPanel.add(fibField);
+        
+        questionPanel.add(new JLabel("Question Text:"));
+        JTextField textField = new JTextField();
+        questionPanel.add(textField);
+        
+        // Options section 
+        JPanel optionsPanel = new JPanel(new GridLayout(4, 1, 10, 10));
+        optionsPanel.setBorder(BorderFactory.createTitledBorder(
+            BorderFactory.createEtchedBorder(), "Answer Options"));
+        
+        JTextField[] optionFields = new JTextField[4];
+        JRadioButton[] correctButtons = new JRadioButton[4];
+        ButtonGroup group = new ButtonGroup();
+        
+        for (int i = 0; i < 4; i++) {
+            JPanel optRow = new JPanel(new BorderLayout(10, 0));
+            JLabel optLabel = new JLabel("Option " + (i + 1) + ":");
+            optLabel.setPreferredSize(new Dimension(80, 25));
             
-            if (examId.isEmpty() || category.isEmpty() || level.isEmpty() || text.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Please fill all required fields.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            optionFields[i] = new JTextField();
+            correctButtons[i] = new JRadioButton("Correct");
+            correctButtons[i].setBackground(Color.WHITE);
+            group.add(correctButtons[i]);
             
-            // Exam ID validity check
-            if (!examService.examExists(examId)) {
-                JOptionPane.showMessageDialog(dialog, "Invalid Exam ID. Please check again.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            JPanel innerPanel = new JPanel(new BorderLayout());
+            innerPanel.add(optionFields[i], BorderLayout.CENTER);
+            innerPanel.add(correctButtons[i], BorderLayout.EAST);
             
-String tempQuestionId = "TEMP";  // Temporary ID for now
-Question question = new Question(tempQuestionId, category, level, mcq, fib, text, marks);
-
-List<Option> options = new ArrayList<>();
-boolean correctSelected = false;
-
-for (int i = 0; i < 4; i++) {
-    String optionText = optionFields[i].getText().trim();
-    if (optionText.isEmpty()) {
-        JOptionPane.showMessageDialog(dialog, "All options must be filled.", "Error", JOptionPane.ERROR_MESSAGE);
-        return;
-    }
-    char isCorrect = correctButtons[i].isSelected() ? 'Y' : 'N';
-    if (isCorrect == 'Y') correctSelected = true;
-
-    // TEMP OptionID; QuestionID will be replaced in backend anyway
-    Option option = new Option("TEMP_O" + (i + 1), optionText, isCorrect, tempQuestionId);
-    options.add(option);
-}
-
-            
-            if (!correctSelected) {
-                JOptionPane.showMessageDialog(dialog, "Please select one correct option.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            
-            boolean success = examService.addQuestionAndOptions(examId, question, options,userId);
-            
-            if (success) {
-                JOptionPane.showMessageDialog(dialog, "Question added successfully.");
-                dialog.dispose();
-            } else {
-                JOptionPane.showMessageDialog(dialog, "Failed to add question.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-            
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            JOptionPane.showMessageDialog(dialog, "Invalid input! Make sure all fields are filled properly.", "Error", JOptionPane.ERROR_MESSAGE);
+            optRow.add(optLabel, BorderLayout.WEST);
+            optRow.add(innerPanel, BorderLayout.CENTER);
+            optionsPanel.add(optRow);
         }
-    });
-    
-    buttonPanel.add(cancelButton);
-    buttonPanel.add(addButton);
-    
-    // Add all components to main panel
-    mainPanel.add(headerPanel, BorderLayout.NORTH);
-    mainPanel.add(new JScrollPane(formPanel), BorderLayout.CENTER);
-    mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-    
-    dialog.add(mainPanel);
-    dialog.setVisible(true);
-}
-
+        
+        // Add panels to form
+        formPanel.add(basicInfoPanel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        formPanel.add(questionPanel);
+        formPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        formPanel.add(optionsPanel);
+        
+        // South panel for buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> dialog.dispose());
+        
+        JButton addButton = new JButton("Add Question");
+        addButton.setBackground(new Color(34, 139, 34)); // Forest green
+        addButton.setForeground(Color.WHITE);
+        addButton.setFont(new Font("Arial", Font.BOLD, 14));
+        
+        addButton.addActionListener(e -> {
+            try {
+                String examId = examIdField.getText().trim();
+                String category = categoryField.getText().trim();
+                String level = levelField.getText().trim();
+                String mcq = mcqField.getText().trim();
+                String fib = fibField.getText().trim();
+                String text = textField.getText().trim();
+                int marks = Integer.parseInt(marksField.getText().trim());
+                
+                if (examId.isEmpty() || category.isEmpty() || level.isEmpty() || text.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "Please fill all required fields.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                if (!examService.examExists(examId)) {
+                    JOptionPane.showMessageDialog(dialog, "Invalid Exam ID. Please check again.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                String tempQuestionId = "TEMP";
+                Question question = new Question(tempQuestionId, category, level, mcq, fib, text, marks);
+                
+                List<Option> options = new ArrayList<>();
+                boolean correctSelected = false;
+                
+                for (int i = 0; i < 4; i++) {
+                    String optionText = optionFields[i].getText().trim();
+                    if (optionText.isEmpty()) {
+                        JOptionPane.showMessageDialog(dialog, "All options must be filled.", "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                    char isCorrect = correctButtons[i].isSelected() ? 'Y' : 'N';
+                    if (isCorrect == 'Y') correctSelected = true;
+                    
+                    Option option = new Option("TEMP_O" + (i + 1), optionText, isCorrect, tempQuestionId);
+                    options.add(option);
+                }
+                
+                if (!correctSelected) {
+                    JOptionPane.showMessageDialog(dialog, "Please select one correct option.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                
+                boolean success = examService.addQuestionAndOptions(examId, question, options, userId);
+                
+                if (success) {
+                    JOptionPane.showMessageDialog(dialog, "Question added successfully.");
+                    dialog.dispose();
+                    
+                    // Refresh the questions panel
+                    cardPanel.remove(cardPanel.getComponentCount() - 1);
+                    JPanel newQuestionsPanel = createQuestionsPanel();
+                    cardPanel.add(newQuestionsPanel, "questions");
+                    
+                    // Refresh the dashboard panel
+                    cardPanel.remove(0); // Remove the dashboard panel
+                    JPanel newDashboardPanel = createDashboardPanel();
+                    cardPanel.add(newDashboardPanel, "dashboard", 0);
+                    
+                    // Show the questions panel
+                    cardLayout.show(cardPanel, "questions");
+                } else {
+                    JOptionPane.showMessageDialog(dialog, "Failed to add question.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(dialog, "Invalid input! Make sure all fields are filled properly.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(addButton);
+        
+        // Add all components to main panel
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+        mainPanel.add(new JScrollPane(formPanel), BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        
+        dialog.add(mainPanel);
+        dialog.setVisible(true);
+    }
     
 //    private void loadExaminerData() {
 //        // Additional initialization if needed
