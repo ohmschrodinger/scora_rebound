@@ -44,6 +44,8 @@ public class ExaminerPortal extends JFrame {
         // Content Panel (CardLayout for switching views)
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
+        
+        // Create and add all panels
         cardPanel.add(createDashboardPanel(), "dashboard");
         cardPanel.add(createExamsPanel(), "exams");
         cardPanel.add(createQuestionsPanel(), "questions");
@@ -118,13 +120,38 @@ public class ExaminerPortal extends JFrame {
         button.setAlignmentX(Component.LEFT_ALIGNMENT);
         button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
         button.setBackground(new Color(73, 125, 116));
-         button.setOpaque(true);
+        button.setOpaque(true);
         button.setContentAreaFilled(true);
-
         button.setForeground(Color.BLACK);
         button.setFocusPainted(false);
-        button.addActionListener(e -> cardLayout.show(cardPanel, cardName));
+        button.addActionListener(e -> {
+            // Remove the current panel
+            cardPanel.removeAll();
+            
+            // Add all panels back in the correct order
+            cardPanel.add(createDashboardPanel(), "dashboard");
+            cardPanel.add(createExamsPanel(), "exams");
+            cardPanel.add(createQuestionsPanel(), "questions");
+            cardPanel.add(createResultsPanel(), "results");
+            
+            // Show the selected panel
+            cardLayout.show(cardPanel, cardName);
+        });
         return button;
+    }
+    
+    private void refreshPanel(String panelName) {
+        // Remove all panels
+        cardPanel.removeAll();
+        
+        // Add all panels back in the correct order
+        cardPanel.add(createDashboardPanel(), "dashboard");
+        cardPanel.add(createExamsPanel(), "exams");
+        cardPanel.add(createQuestionsPanel(), "questions");
+        cardPanel.add(createResultsPanel(), "results");
+        
+        // Show the current panel
+        cardLayout.show(cardPanel, panelName);
     }
     
     private JPanel createDashboardPanel() {
@@ -265,17 +292,7 @@ public class ExaminerPortal extends JFrame {
                                 );
                                 
                                 // Refresh the exams panel
-                                cardPanel.remove(cardPanel.getComponentCount() - 1);
-                                JPanel newExamsPanel = createExamsPanel();
-                                cardPanel.add(newExamsPanel, "exams");
-                                
-                                // Refresh the dashboard panel
-                                cardPanel.remove(0); // Remove the dashboard panel
-                                JPanel newDashboardPanel = createDashboardPanel();
-                                cardPanel.add(newDashboardPanel, "dashboard", 0);
-                                
-                                // Show the exams panel
-                                cardLayout.show(cardPanel, "exams");
+                                refreshPanel("exams");
                             } else {
                                 JOptionPane.showMessageDialog(
                                     panel,
@@ -305,13 +322,6 @@ public class ExaminerPortal extends JFrame {
         panel.add(scrollPane, BorderLayout.CENTER);
         
         return panel;
-    }
-    
-    private void refreshExamsPanel() {
-        JPanel newExamsPanel = createExamsPanel();
-        cardPanel.remove(cardPanel.getComponentCount() - 1); // Remove the last panel (exams panel)
-        cardPanel.add(newExamsPanel, "exams");
-        cardLayout.show(cardPanel, "exams");
     }
     
     private void showCreateExamDialog() {
@@ -361,19 +371,7 @@ public class ExaminerPortal extends JFrame {
                 if (success) {
                     JOptionPane.showMessageDialog(dialog, "Exam created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                     dialog.dispose();
-                    
-                    // Refresh the exams panel
-                    cardPanel.remove(cardPanel.getComponentCount() - 1);
-                    JPanel newExamsPanel = createExamsPanel();
-                    cardPanel.add(newExamsPanel, "exams");
-                    
-                    // Refresh the dashboard panel
-                    cardPanel.remove(0); // Remove the dashboard panel
-                    JPanel newDashboardPanel = createDashboardPanel();
-                    cardPanel.add(newDashboardPanel, "dashboard", 0);
-                    
-                    // Show the exams panel
-                    cardLayout.show(cardPanel, "exams");
+                    refreshPanel("exams");
                 } else {
                     JOptionPane.showMessageDialog(dialog, "Failed to create exam!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -500,17 +498,7 @@ public class ExaminerPortal extends JFrame {
                                 );
                                 
                                 // Refresh the questions panel
-                                cardPanel.remove(cardPanel.getComponentCount() - 1);
-                                JPanel newQuestionsPanel = createQuestionsPanel();
-                                cardPanel.add(newQuestionsPanel, "questions");
-                                
-                                // Refresh the dashboard panel
-                                cardPanel.remove(0); // Remove the dashboard panel
-                                JPanel newDashboardPanel = createDashboardPanel();
-                                cardPanel.add(newDashboardPanel, "dashboard", 0);
-                                
-                                // Show the questions panel
-                                cardLayout.show(cardPanel, "questions");
+                                refreshPanel("questions");
                             } else {
                                 JOptionPane.showMessageDialog(
                                     panel,
@@ -580,9 +568,46 @@ public class ExaminerPortal extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         
+        // Title panel with refresh button
+        JPanel titlePanel = new JPanel(new BorderLayout());
         JLabel titleLabel = new JLabel("Exam Results");
         titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        panel.add(titleLabel, BorderLayout.NORTH);
+        
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(e -> refreshPanel("results"));
+        
+        titlePanel.add(titleLabel, BorderLayout.WEST);
+        titlePanel.add(refreshButton, BorderLayout.EAST);
+        panel.add(titlePanel, BorderLayout.NORTH);
+        
+        // Create a panel for filters
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        filterPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        
+        // Exam filter
+        JLabel examLabel = new JLabel("Select Exam:");
+        JComboBox<String> examComboBox = new JComboBox<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement ps = conn.prepareStatement(
+                "SELECT ExamID, Subject FROM Exam WHERE UserID = ?");
+            ps.setString(1, userId);
+            ResultSet rs = ps.executeQuery();
+            
+            examComboBox.addItem("All Exams");
+            while (rs.next()) {
+                examComboBox.addItem(rs.getString("ExamID") + " - " + rs.getString("Subject"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // Add filter components
+        filterPanel.add(examLabel);
+        filterPanel.add(examComboBox);
+        
+        // Add filter panel to main panel
+        panel.add(filterPanel, BorderLayout.CENTER);
         
         // Table to display results
         String[] columnNames = {"Exam ID", "Subject", "Student Name", "Score", "Grade", "Accuracy", "Rank"};
@@ -592,13 +617,27 @@ public class ExaminerPortal extends JFrame {
         resultsTable.setRowHeight(30);
         resultsTable.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         
+        // Make table non-editable
+        resultsTable.setDefaultEditor(Object.class, null);
+        
+        // Add action listener to exam filter
+        examComboBox.addActionListener(e -> {
+            String selectedExam = (String) examComboBox.getSelectedItem();
+            if (selectedExam != null) {
+                String examId = selectedExam.equals("All Exams") ? null : selectedExam.split(" - ")[0];
+                Object[][] filteredData = getExamResultsData(examId);
+                DefaultTableModel model = new DefaultTableModel(filteredData, columnNames);
+                resultsTable.setModel(model);
+            }
+        });
+        
         JScrollPane scrollPane = new JScrollPane(resultsTable);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(scrollPane, BorderLayout.SOUTH);
         
         return panel;
     }
     
-    private Object[][] getExamResultsData() {
+    private Object[][] getExamResultsData(String examId) {
         try {
             Connection conn = DBConnection.getConnection();
             String query = "SELECT e.ExamID, e.Subject, u.Name AS StudentName, " +
@@ -608,15 +647,25 @@ public class ExaminerPortal extends JFrame {
                           "JOIN user u ON r.UserID = u.userID " +
                           "JOIN PerformanceReport pr ON r.ResultID = pr.ResultID " +
                           "WHERE e.UserID = ?";
-            PreparedStatement ps = conn.prepareStatement(query,  ResultSet.TYPE_SCROLL_INSENSITIVE,
-    ResultSet.CONCUR_READ_ONLY);
+            
+            if (examId != null) {
+                query += " AND e.ExamID = ?";
+            }
+            
+            PreparedStatement ps = conn.prepareStatement(query, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
             ps.setString(1, userId);
+            if (examId != null) {
+                ps.setString(2, examId);
+            }
+            
             ResultSet rs = ps.executeQuery();
             
-            // Count rows
-            rs.last();
-            int rowCount = rs.getRow();
-            rs.beforeFirst();
+            // First, count the number of rows
+            int rowCount = 0;
+            while (rs.next()) {
+                rowCount++;
+            }
+            rs.beforeFirst(); // Reset the cursor
             
             Object[][] data = new Object[rowCount][7];
             int i = 0;
@@ -635,6 +684,10 @@ public class ExaminerPortal extends JFrame {
             e.printStackTrace();
             return new Object[0][0];
         }
+    }
+    
+    private Object[][] getExamResultsData() {
+        return getExamResultsData(null);
     }
     
     private void showAddQuestionDialog() {
@@ -789,19 +842,7 @@ public class ExaminerPortal extends JFrame {
                 if (success) {
                     JOptionPane.showMessageDialog(dialog, "Question added successfully.");
                     dialog.dispose();
-                    
-                    // Refresh the questions panel
-                    cardPanel.remove(cardPanel.getComponentCount() - 1);
-                    JPanel newQuestionsPanel = createQuestionsPanel();
-                    cardPanel.add(newQuestionsPanel, "questions");
-                    
-                    // Refresh the dashboard panel
-                    cardPanel.remove(0); // Remove the dashboard panel
-                    JPanel newDashboardPanel = createDashboardPanel();
-                    cardPanel.add(newDashboardPanel, "dashboard", 0);
-                    
-                    // Show the questions panel
-                    cardLayout.show(cardPanel, "questions");
+                    refreshPanel("questions");
                 } else {
                     JOptionPane.showMessageDialog(dialog, "Failed to add question.", "Error", JOptionPane.ERROR_MESSAGE);
                 }
