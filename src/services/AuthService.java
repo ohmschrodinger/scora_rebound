@@ -17,19 +17,19 @@ import javax.swing.JOptionPane;
  */
 public class AuthService {
     
-    public User login(String name, String password ) 
+    public User login(String userId, String password) 
     {
         try
         {
          Connection conn=DBConnection.getConnection();
-         String str="select userID from user where name=? and password=?";
+         String str="select name from user where userId=? and password=?";
          PreparedStatement ps=conn.prepareStatement(str);
-         ps.setString(1,name);
+         ps.setString(1,userId);
          ps.setString(2,password);
          ResultSet rs=ps.executeQuery();
           
          if (rs.next())
-            return new User(rs.getString("userId"),name,password) ; //returning the user object for given user
+            return new User(userId, rs.getString("name"), password); //returning the user object for given user
          else 
              return null;// login failed
         }

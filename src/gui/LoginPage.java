@@ -11,17 +11,21 @@ import javax.swing.border.MatteBorder;
 import java.io.IOException;
 
 public class LoginPage extends JFrame {
-    private JTextField nameField;
+    private JTextField userIdField;
     private JPasswordField passwordField;
     private JRadioButton studentRadio;
     private JRadioButton examinerRadio;
     private ButtonGroup roleGroup;
-
-    private AuthService authService = new AuthService();
+    private static AuthService authService;
 
     public LoginPage() {
+        authService = new AuthService();
+        initializeUI();
+    }
+
+    private void initializeUI() {
         setTitle("Virtual Examination System - Login");
-        setSize(900, 600); // Increased height to ensure buttons fit
+        setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
@@ -34,13 +38,8 @@ public class LoginPage extends JFrame {
         leftPanel.setPreferredSize(new Dimension(450, 600));
         leftPanel.setBackground(Color.WHITE);
 
-        // Sun icon
-        JLabel title = new JLabel("☀️");
-        title.setFont(new Font("Segoe UI", Font.PLAIN, 32));
-        title.setAlignmentX(Component.LEFT_ALIGNMENT);
-
         // Welcome text
-        JLabel welcomeLabel = new JLabel("Welcome again!");
+        JLabel welcomeLabel = new JLabel("Welcome!");
         welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 28));
         welcomeLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
@@ -49,16 +48,16 @@ public class LoginPage extends JFrame {
         subLabel.setForeground(Color.GRAY);
         subLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Name field with underline style
-        JLabel nameLabel = new JLabel("Name");
-        nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
-        nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        // UserID field with underline style
+        JLabel userIdLabel = new JLabel("User ID");
+        userIdLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        userIdLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        nameField = new JTextField(20);
-        nameField.setBorder(new MatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
-        nameField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        nameField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
-        nameField.setAlignmentX(Component.LEFT_ALIGNMENT);
+        userIdField = new JTextField(20);
+        userIdField.setBorder(new MatteBorder(0, 0, 1, 0, Color.LIGHT_GRAY));
+        userIdField.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        userIdField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
+        userIdField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // Password field with underline style
         JLabel passwordLabel = new JLabel("Password");
@@ -71,7 +70,7 @@ public class LoginPage extends JFrame {
         passwordField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 30));
         passwordField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Radio buttons styled as circles like in the reference image
+        // Radio buttons
         studentRadio = new JRadioButton("Student");
         examinerRadio = new JRadioButton("Examiner");
         studentRadio.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -79,7 +78,6 @@ public class LoginPage extends JFrame {
         studentRadio.setBackground(Color.WHITE);
         examinerRadio.setBackground(Color.WHITE);
         
-        // Use button group to maintain single selection
         roleGroup = new ButtonGroup();
         roleGroup.add(studentRadio);
         roleGroup.add(examinerRadio);
@@ -91,53 +89,25 @@ public class LoginPage extends JFrame {
         rolePanel.add(Box.createHorizontalStrut(20));
         rolePanel.add(examinerRadio);
 
-        // Fixed button panel
+        // Login button
         JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new GridLayout(2, 1, 0, 10));
+        buttonPanel.setLayout(new GridLayout(1, 1));
         buttonPanel.setBackground(Color.WHITE);
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        buttonPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
+        buttonPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
 
-        JButton loginButton = new JButton("Log In");
-        loginButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        loginButton.setBackground(new Color(73, 125, 116));
-        loginButton.setOpaque(true);
-        loginButton.setContentAreaFilled(true);
-
-        loginButton.setForeground(Color.WHITE);
-        loginButton.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
-        loginButton.setFocusPainted(false);
-        loginButton.setBorderPainted(false);
-        loginButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        JButton signupButton = new JButton("Sign up");
-        signupButton.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        signupButton.setBackground(new Color(73, 125, 116));
-        
-signupButton.setOpaque(true);
-signupButton.setContentAreaFilled(true);
-        signupButton.setForeground(Color.WHITE);
-        signupButton.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
-        signupButton.setFocusPainted(false);
-        signupButton.setBorderPainted(false);
-        signupButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
+        JButton loginButton = createStyledButton("Log In");
         loginButton.addActionListener(e -> loginUser());
-        signupButton.addActionListener(e -> signupUser());
-
         buttonPanel.add(loginButton);
-        buttonPanel.add(signupButton);
 
-        // Add components to left panel with enough spacing
-        leftPanel.add(title);
-        leftPanel.add(Box.createVerticalStrut(15));
+        // Add components to left panel
         leftPanel.add(welcomeLabel);
         leftPanel.add(Box.createVerticalStrut(5));
         leftPanel.add(subLabel);
         leftPanel.add(Box.createVerticalStrut(30));
-        leftPanel.add(nameLabel);
+        leftPanel.add(userIdLabel);
         leftPanel.add(Box.createVerticalStrut(5));
-        leftPanel.add(nameField);
+        leftPanel.add(userIdField);
         leftPanel.add(Box.createVerticalStrut(25));
         leftPanel.add(passwordLabel);
         leftPanel.add(Box.createVerticalStrut(5));
@@ -146,46 +116,57 @@ signupButton.setContentAreaFilled(true);
         leftPanel.add(rolePanel);
         leftPanel.add(Box.createVerticalStrut(40));
         leftPanel.add(buttonPanel);
-        leftPanel.add(Box.createVerticalGlue()); // Push everything up
+        leftPanel.add(Box.createVerticalGlue());
 
         // Right Panel (Image)
-JPanel rightPanel = new JPanel() {
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        setBackground(new Color(234, 233, 232));
-
-        // Load and display image
-        ImageIcon icon = new ImageIcon(getClass().getResource("/gui/Login.png"));
-        Image img = icon.getImage();
-        if (img != null) {
-            g.drawImage(img, getWidth() / 2 - img.getWidth(null) / 2,
-                        getHeight() / 2 - img.getHeight(null) / 2, this);
-        }
-    }
-};
-
-
-
-
+        JPanel rightPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                setBackground(new Color(234, 233, 232));
+                try {
+                    ImageIcon icon = new ImageIcon(getClass().getResource("/gui/Login.png"));
+                    Image img = icon.getImage();
+                    if (img != null) {
+                        g.drawImage(img, getWidth() / 2 - img.getWidth(null) / 2,
+                                getHeight() / 2 - img.getHeight(null) / 2, this);
+                    }
+                } catch (Exception e) {
+                    // Handle image loading error silently
+                }
+            }
+        };
         rightPanel.setPreferredSize(new Dimension(450, 600));
 
         add(leftPanel, BorderLayout.WEST);
         add(rightPanel, BorderLayout.EAST);
     }
 
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setBackground(new Color(73, 125, 116));
+        button.setOpaque(true);
+        button.setContentAreaFilled(true);
+        button.setForeground(Color.WHITE);
+        button.setPreferredSize(new Dimension(Integer.MAX_VALUE, 45));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return button;
+    }
+
     private void loginUser() {
-        String name = nameField.getText().trim();
+        String userId = userIdField.getText().trim();
         String password = new String(passwordField.getPassword());
 
-        if (name.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Please fill all fields.");
+        if (userId.isEmpty() || password.isEmpty() || (!studentRadio.isSelected() && !examinerRadio.isSelected())) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields and select a role.");
             return;
         }
 
-        User user = authService.login(name, password);
+        User user = authService.login(userId, password);
         if (user != null) {
-            JOptionPane.showMessageDialog(this, "Login successful!");
             if (studentRadio.isSelected()) {
                 new StudentPortal(user.getUserId()).setVisible(true);
             } else {
@@ -197,64 +178,6 @@ JPanel rightPanel = new JPanel() {
         }
     }
 
-    private void signupUser() {
-        String name = nameField.getText().trim();
-        String password = new String(passwordField.getPassword());
-
-        if (name.isEmpty() || password.isEmpty() || 
-        (!studentRadio.isSelected() && !examinerRadio.isSelected()) || 
-        name.matches(".*\\d.*")) {
-
-            JOptionPane.showMessageDialog(this, "Please fill all fields, select a role, and make sure the name doesn't contain numbers.");
-            return;
-        }
-        //ADD NUMBER ERROR HANDLING
-   if (studentRadio.isSelected()) {
-    String course = JOptionPane.showInputDialog(this, "Enter Course:");
-    
-    if (course == null || !course.matches("[a-zA-Z ]+")) {
-        JOptionPane.showMessageDialog(this, "Invalid course. It must only contain letters and spaces.");
-        return;
-    }
-
-    String yearStr = JOptionPane.showInputDialog(this, "Enter Academic Year:");
-    try {
-        int year = Integer.parseInt(yearStr);
-        if (year < 1 || year > 4) {
-            JOptionPane.showMessageDialog(this, "Academic year must be between 1 and 4.");
-            return;
-        }
-
-        Student student = new Student(null, name, password, course.trim(), year);
-        Student registered = authService.registerStudent(student);
-        if (registered != null) {
-            JOptionPane.showMessageDialog(this, "Student registered! Your ID: " + registered.getUserId());
-        } else {
-            JOptionPane.showMessageDialog(this, "Student registration failed.");
-        }
-    } catch (NumberFormatException e) {
-        JOptionPane.showMessageDialog(this, "Academic year must be a number.");
-    }
-
-} else if (examinerRadio.isSelected()) {
-    String dept = JOptionPane.showInputDialog(this, "Enter Department:");
-    
-    if (dept == null || !dept.matches("[a-zA-Z ]+")) {
-        JOptionPane.showMessageDialog(this, "Invalid department. It must only contain letters and spaces.");
-        return;
-    }
-
-    Examiner examiner = new Examiner(null, name, password, dept.trim());
-    Examiner registered = authService.registerExaminer(examiner);
-    if (registered != null) {
-        JOptionPane.showMessageDialog(this, "Examiner registered! Your ID: " + registered.getUserId());
-    } else {
-        JOptionPane.showMessageDialog(this, "Examiner registration failed.");
-    }
-}
-
-    }
-
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -262,5 +185,5 @@ JPanel rightPanel = new JPanel() {
             e.printStackTrace();
         }
         SwingUtilities.invokeLater(() -> new LoginPage().setVisible(true));
-    } 
+    }
 }
