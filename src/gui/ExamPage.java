@@ -56,13 +56,26 @@ public class ExamPage extends JFrame {
         this.questionOptionMap = new ConcurrentHashMap<>();
         
         // Check if user has already attempted this exam
-        if (responseService.hasAttempted(userId, examId)) {
-            JOptionPane.showMessageDialog(this, 
-                    "You have already attempted this exam!", 
-                    "Exam Attempted", JOptionPane.WARNING_MESSAGE);
-            this.dispose();
-            return;
-        }
+//        if (responseService.hasAttempted(userId, examId)) {
+//            JOptionPane.showMessageDialog(this, 
+//                    "You have already attempted this exam!", 
+//                    "Exam Attempted", JOptionPane.WARNING_MESSAGE);
+//            this.dispose();
+//            return;
+//        }
+if (responseService.hasAttempted(userId, examId)) {
+    JOptionPane.showMessageDialog(this, 
+            "You have already attempted this exam!", 
+            "Exam Attempted", JOptionPane.WARNING_MESSAGE);
+    
+    // Create new StudentPortal instance and make it visible
+    SwingUtilities.invokeLater(() -> {
+        new StudentPortal(userId).setVisible(true);
+    });
+    
+    this.dispose();
+    return;
+}
         
         // Setup the UI
         setupUI();

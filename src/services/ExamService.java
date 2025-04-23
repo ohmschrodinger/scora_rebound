@@ -322,56 +322,158 @@ try (PreparedStatement ps = conn.prepareStatement(insertContainsSql)) {
     return false;
 }
 
-    public boolean deleteExam(String examId) {
+//    public boolean deleteExam(String examId) {
+//        try {
+//            Connection conn = DBConnection.getConnection();
+//            PreparedStatement ps = conn.prepareStatement("DELETE FROM Exam WHERE ExamID = ?");
+//            ps.setString(1, examId);
+//            int rowsAffected = ps.executeUpdate();
+//            return rowsAffected > 0;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
+   
+   public boolean deleteExam(String examId) {
+    Connection conn = null;
+    try {
+        conn = DBConnection.getConnection();
+        conn.setAutoCommit(false); // Start transaction
+
+        String[] queries = {
+            "DELETE FROM PerformanceReport WHERE ResultID IN (SELECT ResultID FROM Result WHERE ExamID = ?)",
+            "DELETE FROM Result WHERE ExamID = ?",
+            "DELETE FROM Response WHERE ExamID = ?",
+            "DELETE FROM Attempt WHERE ExamID = ?",
+            "DELETE FROM ExamSchedule WHERE ExamID = ?",
+            "DELETE FROM Contains WHERE ExamID = ?",
+            "DELETE FROM Exam WHERE ExamID = ?"
+        };
+
+        for (String query : queries) {
+            try (PreparedStatement ps = conn.prepareStatement(query)) {
+                ps.setString(1, examId);
+                ps.executeUpdate();
+            }
+        }
+
+        conn.commit(); // Commit transaction
+        return true;
+    } catch (Exception e) {
+        e.printStackTrace();
         try {
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM Exam WHERE ExamID = ?");
-            ps.setString(1, examId);
-            int rowsAffected = ps.executeUpdate();
-            return rowsAffected > 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            if (conn != null) conn.rollback(); // Rollback if any error
+        } catch (Exception rollbackEx) {
+            rollbackEx.printStackTrace();
+        }
+        return false;
+    } finally {
+        try {
+            if (conn != null) conn.setAutoCommit(true);
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
+}
 
-    public boolean deleteQuestion(String questionId) {
+
+//    public boolean deleteQuestion(String questionId) {
+//        try {
+//            Connection conn = DBConnection.getConnection();
+//            conn.setAutoCommit(false);
+//            
+//            try {
+//                // First delete from manages table
+//                PreparedStatement ps1 = conn.prepareStatement("DELETE FROM manages WHERE QuestionID = ?");
+//                ps1.setString(1, questionId);
+//                ps1.executeUpdate();
+//                
+//                // Then delete from Contains table
+//                PreparedStatement ps2 = conn.prepareStatement("DELETE FROM Contains WHERE QuestionID = ?");
+//                ps2.setString(1, questionId);
+//                ps2.executeUpdate();
+//                
+//                // Then delete from Option_table
+//                PreparedStatement ps3 = conn.prepareStatement("DELETE FROM Option_table WHERE QuestionID = ?");
+//                ps3.setString(1, questionId);
+//                ps3.executeUpdate();
+//                
+//                // Finally delete from Question table
+//                PreparedStatement ps4 = conn.prepareStatement("DELETE FROM Question WHERE QuestionID = ?");
+//                ps4.setString(1, questionId);
+//                int rowsAffected = ps4.executeUpdate();
+//                
+//                conn.commit();
+//                return rowsAffected > 0;
+//            } catch (SQLException e) {
+//                conn.rollback();
+//                throw e;
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
+   
+public boolean deleteQuestion(String questionId) {
+        Connection conn = null;
         try {
-            Connection conn = DBConnection.getConnection();
+            conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
             
             try {
-                // First delete from manages table
-                PreparedStatement ps1 = conn.prepareStatement("DELETE FROM manages WHERE QuestionID = ?");
+                // First delete from response table
+                PreparedStatement ps0 = conn.prepareStatement("DELETE FROM response WHERE SelectedOptionID IN (SELECT OptionID FROM Option_table WHERE QuestionID = ?)");
+                ps0.setString(1, questionId);
+                ps0.executeUpdate();
+                
+                // Then delete from manages table
+                PreparedStatement ps1 = conn.prepareStatement("DELETE FROM manages WHERE questionID = ?");
                 ps1.setString(1, questionId);
                 ps1.executeUpdate();
                 
                 // Then delete from Contains table
-                PreparedStatement ps2 = conn.prepareStatement("DELETE FROM Contains WHERE QuestionID = ?");
+                PreparedStatement ps2 = conn.prepareStatement("DELETE FROM Contains WHERE questionID = ?");
                 ps2.setString(1, questionId);
                 ps2.executeUpdate();
                 
                 // Then delete from Option_table
-                PreparedStatement ps3 = conn.prepareStatement("DELETE FROM Option_table WHERE QuestionID = ?");
+                PreparedStatement ps3 = conn.prepareStatement("DELETE FROM Option_table WHERE questionID = ?");
                 ps3.setString(1, questionId);
                 ps3.executeUpdate();
                 
                 // Finally delete from Question table
-                PreparedStatement ps4 = conn.prepareStatement("DELETE FROM Question WHERE QuestionID = ?");
+                PreparedStatement ps4 = conn.prepareStatement("DELETE FROM Question WHERE questionID = ?");
                 ps4.setString(1, questionId);
                 int rowsAffected = ps4.executeUpdate();
                 
                 conn.commit();
                 return rowsAffected > 0;
             } catch (SQLException e) {
-                conn.rollback();
+                if (conn != null) {
+                    conn.rollback();
+                }
                 throw e;
+            } finally {
+                if (conn != null) {
+                    conn.setAutoCommit(true);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
+
 
 }
 
